@@ -5,14 +5,14 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
      name='blargh',  
-     version='0.0.1',
+     version='0.0.2',
      author='Jan Betley',
      author_email='jan.betley@gmail.com',
      description='Generic REST API base',
      long_description=long_description,
      long_description_content_type='text/markdown',
      url='https://github.com/johny-b/blargh',
-     packages=setuptools.find_packages(),
+     packages=setuptools.find_packages(exclude=['tests', 'tests.*']),
      install_requires=['psycopg2-binary', 'Flask', 'flask-restful'],
      classifiers=[
          'Programming Language :: Python :: 3',
