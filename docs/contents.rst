@@ -4,6 +4,7 @@ User's Guide
 .. toctree::
     :maxdepth: 2
     
+    installation
     quickstart
     data_model
     storage
