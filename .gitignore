@@ -1,4 +1,11 @@
 *__pycache__*
 .pytest_cache
 tests/_d*
+
+# DOCS
 docs/_build
+
+# BUILD
+blargh.egg-info/
+build/
+dist/
