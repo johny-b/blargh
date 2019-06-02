@@ -1,0 +1,131 @@
+'''
+Expected data for delete() tests
+'''
+
+d = {
+    'DictStorage': {
+        1: {
+            'child': {1: {'id': 1, 'mother': 1, 'name': 'c1'},
+                      2: {'father': 2, 'id': 2, 'mother': 2, 'name': 'c2'},
+                      3: {'id': 3, 'mother': 2, 'name': 'c3'}},
+            'female': {1: {'children': [1], 'id': 1, 'name': 'f1'},
+                       2: {'children': [2, 3], 'husband': 2, 'id': 2, 'name': 'f2'}},
+            'male': {2: {'children': [2], 'id': 2, 'name': 'm2', 'wife': 2}}},
+        2: {
+            'child': {2: {'father': 2, 'id': 2, 'mother': 2, 'name': 'c2'},
+                      3: {'father': 1, 'id': 3, 'mother': 2, 'name': 'c3'}},
+            'female': {1: {'children': [], 'husband': 1, 'id': 1, 'name': 'f1'},
+                       2: {'children': [2, 3], 'husband': 2, 'id': 2, 'name': 'f2'}},
+            'male': {1: {'children': [3], 'id': 1, 'name': 'm1', 'wife': 1},
+                     2: {'children': [2], 'id': 2, 'name': 'm2', 'wife': 2}}},
+        3: {
+            'child': {2: {'father': 2, 'id': 2, 'name': 'c2'},
+                      3: {'father': 1, 'id': 3, 'name': 'c3'}},
+            'female': {1: {'children': [], 'husband': 1, 'id': 1, 'name': 'f1'}},
+            'male': {1: {'children': [3], 'id': 1, 'name': 'm1', 'wife': 1},
+                     2: {'children': [2], 'id': 2, 'name': 'm2'}}},
+        4: {
+            'child': {2: {'father': 2, 'id': 2, 'name': 'c2'},
+                      3: {'father': 1, 'id': 3, 'name': 'c3'}},
+            'female': {},
+            'male': {1: {'children': [3], 'id': 1, 'name': 'm1'},
+                     2: {'children': [2], 'id': 2, 'name': 'm2'}}},
+        5: {
+            'child': {2: {'father': 2, 'id': 2, 'name': 'c2'},
+                      3: {'id': 3, 'name': 'c3'}},
+            'female': {},
+            'male': {2: {'children': [2], 'id': 2, 'name': 'm2'}}},
+        6: {
+            'child': {2: {'father': 2, 'id': 2, 'name': 'c2'}},
+            'female': {},
+            'male': {2: {'children': [2], 'id': 2, 'name': 'm2'}}},
+        7: {
+            'child': {},
+            'female': {},
+            'male': {2: {'children': [], 'id': 2, 'name': 'm2'}}},
+        8: {
+            'child': {},
+            'female': {},
+            'male': {}},
+        9: {'cookie': {2: {'id': 2, 'jar': 1, 'type': 'muffin'},
+                       3: {'id': 3, 'jar': 2, 'type': 'shortbread'}},
+            'jar': {1: {'cookies': [2], 'id': 1},
+                    2: {'cookies': [3], 'id': 2}}},
+        10: {'cookie': {1: {'id': 1, 'type': 'biscuit'},
+                        2: {'id': 2, 'type': 'muffin'},
+                        3: {'id': 3, 'jar': 2, 'type': 'shortbread'}},
+             'jar': {2: {'cookies': [3], 'id': 2}}},
+        11: {'cookie': {1: {'id': 1, 'jar': 1, 'type': 'biscuit'},
+                        2: {'id': 2, 'jar': 1, 'type': 'muffin'},
+                        3: {'id': 3, 'type': 'shortbread'}},
+             'jar': {1: {'cookies': [1, 2], 'id': 1}}},
+        12: {'cookie': {1: {'id': 1, 'type': 'biscuit'},
+                        2: {'id': 2, 'type': 'muffin'},
+                        3: {'id': 3, 'type': 'shortbread'}},
+             'jar': {}},
+    },
+    'PGStorage': {
+        1: {'child': [(1, 'c1', None, 1), 
+                      (2, 'c2', 2, 2), 
+                      (3, 'c3', None, 2)],
+            'female': [(1, 'f1', None), 
+                       (2, 'f2', 2)],
+            'male': [(2, 'm2')]},
+        2: {'child': [(2, 'c2', 2, 2), 
+                      (3, 'c3', 1, 2)],
+            'female': [(1, 'f1', 1), 
+                       (2, 'f2', 2)],
+            'male': [(1, 'm1'), 
+                     (2, 'm2')]},
+        3: {'child': [(2, 'c2', 2, None), 
+                      (3, 'c3', 1, None)],
+            'female': [(1, 'f1', 1)],
+            'male': [(1, 'm1'), 
+                     (2, 'm2')]},
+        4: {'child': [(2, 'c2', 2, None), 
+                      (3, 'c3', 1, None)],
+            'female': [],
+            'male': [(1, 'm1'), 
+                     (2, 'm2')]},
+        5: {'child': [(2, 'c2', 2, None), 
+                      (3, 'c3', None, None)],
+            'female': [],
+            'male': [(2, 'm2')]},
+        6: {'child': [(2, 'c2', 2, None)],
+            'female': [],
+            'male': [(2, 'm2')]},
+        7: {'child': [],
+            'female': [],
+            'male': [(2, 'm2')]},
+        8: {'child': [],
+            'female': [],
+            'male': []},
+        0: {'jar': [(1,), (2,)],
+            'cookie': [(1, 1, 'biscuit'), 
+                       (2, 1, 'muffin'), 
+                       (3, 2, 'shortbread')]},
+        9: {'jar': [(1,), (2,)],
+            'cookie': [(2, 1, 'muffin'), 
+                       (3, 2, 'shortbread')]},
+        10: {'jar': [(2,)],
+             'cookie': [(1, None, 'biscuit'), 
+                        (2, None, 'muffin'), 
+                        (3, 2, 'shortbread')]},
+        11: {'jar': [(1,)],
+             'cookie': [(1, 1, 'biscuit'), 
+                        (2, 1, 'muffin'), 
+                        (3, None, 'shortbread')]},
+        12: {'jar': [],
+             'cookie': [(1, None, 'biscuit'), 
+                        (2, None, 'muffin'), 
+                        (3, None, 'shortbread')]},
+    }
+}
+
+#   The same data
+d['PickledDictStorage'] = d['DictStorage']
+
+from blargh.engine import world
+def expected_delete_data(test_nr):
+    import copy
+    return copy.deepcopy(d[type(world().storage).__name__][test_nr])
