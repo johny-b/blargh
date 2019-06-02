@@ -13,11 +13,11 @@ Two main concepts behind **blargh**:
   * Engine, usually some sort of `ORM <https://en.wikipedia.org/wiki/Object-relational_mapping>`_
   * Web application
 
-  In **blargh** those layers are completly independent, and the Engine core allows connecting different storages/web applications.
+  In **blargh** those layers are independent, and the Engine core allows connecting different storages/web applications.
   In particular, middle layer can be used as a REST-like database interface.
 
 * Main part of any RESTful service is defined by its data model - set of resources and relationships between them.
-  Everything else is details, and **blargh** doesn't deal with those.
+  Everything else is details, and **blargh** doesn't deal with those (but provides tools to implement them).
 
 So, creating a RESTful service with **blargh** consists of three steps:
 
@@ -26,11 +26,10 @@ So, creating a RESTful service with **blargh** consists of three steps:
 3. Connect the outer layer (eg. :doc:`Flask-Restful <flask_restful:index>`)
 
 
-
 Basic usage
 -----------
 
-First, we need to initialize our application
+Initialization:
 
 .. code-block:: python
     

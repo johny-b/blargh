@@ -5,11 +5,13 @@ BLARGH
 
 .. module:: blargh
 
-**blargh** is very goooood
+Create a RESTful service with as little effort as possible - answer few questions:
 
-`docs`_
+1. What is your data model?
+2. Where do you want to store the data? (recommended answer: PostgreSQL)
+3. What web app framework do you want to use? (recommended answer: Flask)
 
-.. _docs: https://blargh.readthedocs.io/en/latest/
+and **blargh** will take care of the rest. Or at least it will try.
 
 
 .. include:: contents.rst
