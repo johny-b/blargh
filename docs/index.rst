@@ -5,9 +5,11 @@ BLARGH
 
 .. module:: blargh
 
-Create a RESTful service with as little effort as possible - answer few questions:
+Create a RESTful service with as little effort as possible.
 
-1. What is your data model?
+Answer few questions:
+
+1. What is the data model?
 2. Where do you want to store the data? (recommended answer: PostgreSQL)
 3. What web app framework do you want to use? (recommended answer: Flask)
 
