@@ -110,5 +110,4 @@ class DataModel():
         return lines
 
     def __eq__(self, other):
-        if type(self) == type(other):
-            return self.as_code() == other.as_code()
+        return type(self) == type(other) and self.as_code() == other.as_code()
