@@ -121,6 +121,44 @@ class Scalar(Field):
         return code
 
 class Calc(Field):
+    '''
+    Field that is not stored, but:
+
+    *   when requested, it's value is computed (e.g. based on other fields)
+    *   when updated, new value is passed to a function that updates other fields
+
+    Main purpose is to allow interface that is independent from storage. For example,
+    we might want to store kilometers, but allow end users to read/write miles.
+
+    Attributes:
+        getter: function accepting :code:`blargh.engine.Instance` as first and only argument, 
+                and returning some value, e.g.
+
+                .. code-block:: python
+                    
+                    def is_empty(jar):
+                        cookies_field = jar.model.field('cookies')
+                        cookies = jar.get_val(cookies_field).repr(0)
+                        return not len(cookies)
+                
+                Default getter returns None.
+
+        setter: function accepting :code:`blargh.engine.Instance` as first argument and anything as second,
+                should return dictionary :code:`{'other_field_name': new_value_of_field}`, e.g:
+
+                .. code-block:: python
+                    
+                    def ingredients(cookie, ingredients):
+                        if 'milk' in ingredients:
+                            new_type = 'muffin'
+                        else:
+                            new_type = 'shortbread'
+                        return {'type': new_type}
+
+                Default setter raises an exception.
+                        
+    '''
+    
     rel = False
     
     @staticmethod
@@ -182,12 +220,24 @@ class Calc(Field):
         lines.append(last_line)
         return lines
 
-###########################################
-#   REL
-#
-#
-#   !!!
+
 class Rel(Field):
+    '''
+    Field representing other objects.
+
+    Relation could be one-way (e.g. jar knows it's cookies, but cookie has no idea if it is in a jar), 
+    or two-way. Two-way relations are created with DataModel.connect().
+
+    Attributes:
+        stores: Defined type of objects on the other side of the relation 
+                (heterogeneous relations are not allowed).
+                Value should be :code:`engine.data_model.object.Object` (the thing returned by 
+                :code:`DataModel.create_object('some_name')`). 
+        multi: if True, any number of related objects is allowed, False - 0 or 1.
+        cascade: if True, when this instance is deleted all related instances are also deleted.
+
+    It is forbidden to set both :code:`multi=True` and :code:`cascade=True`.
+    '''
     rel = True
     def __init__(self, *args, stores, multi, cascade=False, **kwargs):
         if multi:
