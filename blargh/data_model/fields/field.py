@@ -2,19 +2,27 @@ from blargh import exceptions
 from blargh.engine import world
 from .values import ScalarValue, CalcValue, MultiRelValue, SingleRelValue
 
-def function_def(f):
-    import inspect
-    return inspect.getsource(f).split("\n")
-
 class Field():
+    '''
+    Base class of all fields, implements common attributes.
+
+    Attributes:
+        name: Internal (stored) field name
+        ext_name: External field name, defaults to :code:`name`
+        readonly: Boolean, if True user will not be allowed to set value of this field directly.
+                  Readonly field can be changed either by other Calc field, or by updates to a connected
+                  Rel field. Compare with :code:`writable`.
+        default:  Default value of a field.
+        _writable: Either boolean, or a function accepting :code:`blargh.engine.Instance` as only argument.
+                  If evaluates to False, field can't be changed in any way - compare with :code:`readonly`.
+                  Public interface: :code:`Field.writable(instance)`.
+        hidden:   Boolean, if True field is not visible (so also can't be accessed directly), but still stored. 
+                  Hidden field can be changed either by other Calc field, or by updates to a connected Rel field.
+    
+    '''
     def __init__(self, name, ext_name=None, readonly=False, default=None, writable=True, hidden=False):
-        #   Stored name
         self.name = name
-
-        #   External name - for presentation purposes
         self.ext_name = ext_name if ext_name is not None else name
-
-        #   Other attributes
         self.readonly = readonly
         self.hidden = hidden
         self.default = default
@@ -52,7 +60,7 @@ class Field():
     def as_code(self):
         lines = []
         if callable(self._writable):
-            lines += function_def(self._writable)
+            lines += _function_def(self._writable)
             writable = self._writable.__name__
         else:
             writable = self._writable
@@ -63,6 +71,21 @@ class Field():
         return lines
 
 class Scalar(Field):
+    '''
+    Field storing a single value.
+    This value can be complex (e.g. list or json), but is not parsed in any way - stored
+    value is always the same as visible value.
+
+    Beside attributes inherited from :code:`Field`, there are also:
+
+    Attributes:
+        pkey: If True, this field will be used in :code:`blargh.engine.Instance.id()`.
+              Every object must have exactly one pkey field. Pkey fields are always readonly.
+        type_: If anything else than None, values of this type will be accepted for this field.
+              Values that can be reversibly casted to :code:`type_` are also accepted. E.g. :code:`'1'` 
+              is accepted for :code:`int` field, because :code:`str(int('1')) == '1'`, 
+              but :code:`'1 '` is not.
+    '''
     rel = False
 
     def __init__(self, *args, pkey=False, type_=None, **kwargs):
@@ -143,13 +166,13 @@ class Calc(Field):
         lines, last_line = code[:-1], code[-1]
 
         if self._getter != self._default_getter:
-            lines += function_def(self._getter)
+            lines += _function_def(self._getter)
             getter = self._getter.__name__
         else:
             getter = None
         
         if self._setter != self._default_setter:
-            lines += function_def(self._setter)
+            lines += _function_def(self._setter)
             setter = self._setter.__name__
         else:
             setter = None
@@ -280,3 +303,11 @@ class Rel(Field):
         code[-1] = code[-1].replace(')', ', stores={}, multi={}, cascade={})'.format(
             self.stores.name, self.multi, self.cascade))
         return code
+
+def _function_def(f):
+    '''
+    Returns lines of code for given function.
+    Used internaly in AnyField.as_code().
+    '''
+    import inspect
+    return inspect.getsource(f).split("\n")

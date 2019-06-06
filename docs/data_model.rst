@@ -1,7 +1,10 @@
 Data model
-========
+==========
 
 `Example data model in quickstart <quickstart.html#data-model>`__
+
+Overview
+--------
 
 Data model definition is a core part of any blargh-based application.
 In brief, there are four steps:
@@ -26,17 +29,20 @@ In brief, there are four steps:
 
 Steps 1,2 and 4 are simple declarations, all the magic happens in :code:`data_model.fields`.
 
-data_model.fields.Scalar
-------------------------
+Fields
+------
 
-data_model.fields.Calc
+.. autoclass:: blargh.data_model.fields.Field
+
+.. autoclass:: blargh.data_model.fields.Scalar
+
+.. autoclass:: blargh.data_model.fields.Calc
+
+.. autoclass:: blargh.data_model.fields.Rel
+
+
+Creating custom fields
 ----------------------
-
-data_model.fields.Rel
----------------------
-
-Custom fields
--------------
 
 Connecting Rel fields
 ---------------------
