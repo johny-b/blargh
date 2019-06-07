@@ -44,6 +44,12 @@ Fields
 Creating custom fields
 ----------------------
 
+More-or-less any behaviour could be achived by extending `blargh.data_model.fields.*` classes, or maybe by creating independent field class.
+Few examples are in the cookbook:
+
+- `Scalar field that accepts only odd integers <cookbook.html#custom-field-class-1>`__
+- `Scalar field that can be changed no more than 3 times <cookbook.html#custom-field-class-2>`__
+
 Connecting Rel fields
 ---------------------
 
@@ -85,6 +91,9 @@ could refer to biological children only, and child could have adoptive mother.
 Utilities
 ---------
 
+Data model code
+^^^^^^^^^^^^^^^
+
 :code:`dm.as_code()` returns code lines that create identical data model
 
 .. code-block:: python
@@ -96,4 +105,31 @@ Utilities
     from some_file import dm as dm_2
     assert dm == dm_2
 
-[TODO - data model from PG database]
+Data model from PostgreSQL schema
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you want to use blargh with already existint PostgreSQL database, there's a tool
+:code:`blargh.data_model.PGSchemaImport` that will create appropriate data model. 
+For example, our favourite cookie-jar data model could be obtained this way:
+
+.. code-block:: bash
+    
+    psql -c '
+        CREATE SCHEMA cookies;
+        CREATE TABLE  cookies.jar    (id   serial PRIMARY KEY);
+        CREATE TABLE  cookies.cookie (id   serial PRIMARY KEY, 
+                                      type text, 
+                                      jar  integer REFERENCES cookies.jar(id));
+    '
+    python3 -c '
+    import psycopg2
+    from blargh.data_model import PGSchemaImport
+
+    conn = psycopg2.connect("")  # correct connection string
+
+    dm = PGSchemaImport(conn, "cookies").data_model()
+    print("\n".join(dm.as_code()))
+    ' > cookies_data_model.py
+
+This was not extensively tested, so expect bugs. It is not possible to process more than one schema,
+although you can run it few times and combine results on your own.
