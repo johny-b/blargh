@@ -3,24 +3,25 @@ from abc import ABC, abstractmethod
 class BaseStorage(ABC):
     '''
     Abstract base class for all Storage classes.
+
+    While designing class, especially __init__, it's good to remember that
+    engine.setup() accepts either an initialized Storage, or function returning new
+    Storage, and if function is provided, new Storage instance will be created
+    **for every request**, so it's recomented to either:
+      * provide object, not function, if possible,
+      * or make Storage initialization as simple as possible (e.g. avoid reading large files)
     '''
     
     @abstractmethod
     def __init__(self):
         '''
         Initialize storage object.
-
-        engine.setup() accepts either an initialized Storage, or function returning new
-        Storage. If function is provided, new Storage instance will be created
-        **for every request**, so it's recomented to either
-          * provide object, not function, if possible,
-          * or make Storage initialization as short as possible (e.g. avoid reading large files)
          '''
 
     @abstractmethod
     def save(self, instance):
         '''
-        :param instance: engine.Instance with already set .id().
+        :param instance: :code:`blargh.engine.Instance` with already set :code:`.id()`.
         :returns: None
 
         Save single object to the database. If such object already exists, it should be replaced.

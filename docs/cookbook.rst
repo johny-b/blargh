@@ -10,3 +10,13 @@ Custom Field class 2
 --------------------
 
 [TODO]
+
+Read Only Resources
+-------------------
+
+[TODO]
+
+Resource access restriction
+---------------------------
+
+[TODO]
