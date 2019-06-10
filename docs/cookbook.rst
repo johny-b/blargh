@@ -20,3 +20,8 @@ Resource access restriction
 ---------------------------
 
 [TODO]
+
+PATCH on a collection
+---------------------
+
+[TODO]

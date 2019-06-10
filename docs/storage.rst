@@ -44,7 +44,7 @@ of DictStorage that allows restarts without loosing data.
 .. code-block:: python
 
     file_with_pickled_dictionary = 'data.pickle'
-    storage = engine.PickledDictStorage(data)
+    storage = engine.PickledDictStorage(file_with_pickled_dictionary)
 
 PGStorage
 ---------

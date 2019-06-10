@@ -21,8 +21,8 @@ In brief, there are four steps:
     object_2 = dm.create_object('object_2_name')
     
     #   STEP 3 - add fields to objects
-    object_1.add_field(data_model.fields.SomeField('some_field_name', ...))
-    object_2.add_field(data_model.fields.OtherField('other_field_name', ...))
+    object_1.add_field(data_model.fields.Scalar('some_field_name'))
+    object_2.add_field(data_model.fields.Scalar('other_field_name'))
 
     #   STEP 4 - (optional) connect different objects
     dm.connect(object_1, 'some_field_name', object_2, 'other_field_name')

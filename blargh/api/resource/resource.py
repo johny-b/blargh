@@ -59,12 +59,14 @@ class Resource():
             #   this is strange and not expected, but still somehow predicted
             data, status = e.ext_data(), e.status
         except Exception as e:
-            #   and this is totally unexpected, we assume this is 400
-            #   TODO: this might be any internal error, i.e. we implicite assume 
+            #   TODO: This might be any internal error, e.g. we implicite assume 
             #         something will be not-None, it is None, so something crashes.
-            #         Maybe such exceptions should be investigated?
+            #         This should never be possible with well-connected outer layer.
+            #
+            #         Currently we assume every such exceptions should be investigated,
+            #         so they are reraised. Generic 400/500 is to be considered.
             raise e
-            bad_request = exceptions.e400()
-            data, status = bad_request.ext_data(), bad_request.status
+            # bad_request = exceptions.e400()
+            # data, status = bad_request.ext_data(), bad_request.status
     
         return self.response(data, status, request_name, args, kwargs)

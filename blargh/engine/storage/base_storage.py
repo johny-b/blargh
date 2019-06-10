@@ -54,7 +54,7 @@ class BaseStorage(ABC):
     def selected_ids(self, name, data):
         '''
         :param name: resource name
-        :param data: dict with keys being a subset of dictionary returned by .load()
+        :param data: dict, with resource field names as keys
         :returns: sorted list of ids
 
         Return list of ids of all objects for which data is a subset of value returned by .load().
