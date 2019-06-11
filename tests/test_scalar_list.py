@@ -21,7 +21,7 @@ def test_api_expected(init_world, get_client, method, args, ingredients):
     #   Cookie field gets 'ingredients' text[] field
     engine.dm().object('cookie').add_field(Scalar('ingredients', default=[], type_=list))
     if issubclass(type(engine.world().storage), engine.PGStorage):
-        engine.world().storage._q._conn.cursor().execute('''
+        engine.world().storage._conn.cursor().execute('''
             ALTER TABLE cookie ADD COLUMN ingredients text[];
         ''')
 

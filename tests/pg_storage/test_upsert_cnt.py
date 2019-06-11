@@ -64,7 +64,7 @@ def test_api_expected(get_client, method, args, expected_cnts):
                     return f(*args, **kwargs)
                 return wrapped_upsert
 
-            storage._q.upsert = wrap_upsert(storage._q.upsert)
+            storage._q().upsert = wrap_upsert(storage._q().upsert)
             return storage
         return wrapped_create_storage
 

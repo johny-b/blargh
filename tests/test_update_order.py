@@ -46,7 +46,7 @@ def new_cookies_dm(order_id):
 
         #   Add database column if PGStorage
         if issubclass(type(engine.world().storage), engine.PGStorage):
-            engine.world().storage._q._conn.cursor().execute('''
+            engine.world().storage._conn.cursor().execute('''
                 ALTER TABLE jar ADD COLUMN closed boolean;
             ''')
     

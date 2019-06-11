@@ -47,7 +47,19 @@ class PGStorage(BaseStorage):
         self._conn = conn
 
         self._schema = schema
-        self._q = query_cls(conn, schema, {o.name: o.pkey_field().name for o in dm().objects().values()})
+
+        #   To initialize query instance we need list of all primary keys. Those are available
+        #   in the data model, but it seems a good idea to avoid passing data model directly to storage.
+        #   Instead, self._query is built in lazy way, when needed - and that should be after engine
+        #   was set up, so the data model is available in dm() function.
+        self._query_cls = query_cls
+        self._query = None
+
+    def _q(self):
+        if self._query is None:
+            self._query = self._query_cls(self._conn, self._schema, 
+                                          {o.name: o.pkey_field().name for o in dm().objects().values()})
+        return self._query
     
     #   PUBLIC INTERFACE
     @capture_psycopg_error
@@ -55,7 +67,7 @@ class PGStorage(BaseStorage):
         #   If we got here, instance.changed() is True, but all changes could be made
         #   on "virtual" columns (rel fields stored on the other side). In such case,
         #   nothing is saved, because no database columns changed.
-        table_columns = self._q.table_columns(instance.model.name)
+        table_columns = self._q().table_columns(instance.model.name)
         changed_columns = [f.name for f in instance.changed_fields if f.name in table_columns]
         if not changed_columns:
             return
@@ -65,7 +77,7 @@ class PGStorage(BaseStorage):
 
         #   Save new value
         name = instance.model.name
-        self._q.upsert(name, data)
+        self._q().upsert(name, data)
 
     def _write_repr(self, instance):
         '''
@@ -103,7 +115,7 @@ class PGStorage(BaseStorage):
         #   Determine column name
         pkey_name = dm().object(name).pkey_field().name
         
-        stored_data = self._q.select(name, {pkey_name: id_})
+        stored_data = self._q().select(name, {pkey_name: id_})
         if not stored_data:
             raise exceptions.e404(object_name=name, object_id=id_)
         
@@ -127,7 +139,7 @@ class PGStorage(BaseStorage):
 
     @capture_psycopg_error
     def delete(self, name, id_):
-        self._q.delete(name, id_)
+        self._q().delete(name, id_)
 
     @capture_psycopg_error
     def selected_ids(self, this_name, wr):
@@ -149,7 +161,7 @@ class PGStorage(BaseStorage):
         this_table_wr = {}
         other_selects = []
         for key, val in wr.items():
-            if key in self._q.table_columns(this_name):
+            if key in self._q().table_columns(this_name):
                 this_table_wr[key] = val
             else:
                 field = model.field(key)
@@ -180,7 +192,7 @@ class PGStorage(BaseStorage):
         WR containst key-val pairs matching columns in table NAME.
         List of dictionaries from table NAME is returned.
         '''
-        return self._q.select(name, wr)
+        return self._q().select(name, wr)
 
     @capture_psycopg_error
     def next_id(self, name):
@@ -204,7 +216,7 @@ class PGStorage(BaseStorage):
 
         '''
         pkey_name = dm().object(name).pkey_field().name
-        default_expr = self._q.default_pkey_expr(name, pkey_name)
+        default_expr = self._q().default_pkey_expr(name, pkey_name)
 
         if default_expr is None:
             raise exceptions.ProgrammingError("Unknown default pkey value for {}".format(name)) 
@@ -214,7 +226,7 @@ class PGStorage(BaseStorage):
             cursor = self._conn.cursor()
             cursor.execute("SELECT {}".format(default_expr))
             val = cursor.fetchone()[0]
-            if self._q.select(name, {pkey_name: val}):
+            if self._q().select(name, {pkey_name: val}):
                 if old_val == val:
                     raise exceptions.ProgrammingError('Pkey value generator returned twice the same value. \
                                                       Table: {}, val: {}'.format(name, val))
@@ -227,7 +239,7 @@ class PGStorage(BaseStorage):
     def data(self):
         d = {}
         for name, obj in dm().objects().items():
-            d[name] = self._q.dump_table(name, obj.pkey_field().name)
+            d[name] = self._q().dump_table(name, obj.pkey_field().name)
         return d
 
 
@@ -246,7 +258,7 @@ class PGStorage(BaseStorage):
         '''
         clean_data = {}
         for key, val in data.items():
-            if key in self._q.table_columns(name):
+            if key in self._q().table_columns(name):
                 clean_data[key] = val
         return clean_data
 
@@ -271,7 +283,7 @@ class PGStorage(BaseStorage):
             if field.rel and name not in data:
                 other_name = field.stores.name
                 other_field_name = field.other.name
-                all_related = self._q.select(other_name, {other_field_name: id_})
+                all_related = self._q().select(other_name, {other_field_name: id_})
 
                 related_pkey_name = dm().object(other_name).pkey_field().name
                 related_ids = [x[related_pkey_name] for x in all_related]

@@ -30,10 +30,6 @@ initial data doesn't have to be empty:
     }
     storage = engine.DictStorage(data)
 
-
-
-
-
 PickledDictStorage
 ------------------
 
@@ -59,14 +55,36 @@ Data is stored in a single schema in a PostgreSQL Database.
     connstr = ''
     schema_name = 'cookies'
 
-    def storage():
+    conn = psycopg2.connect(connstr)
+    storage = engine.PGStorage(conn, schema_name)
+
+This works fine, but if:
+
+- your app uses more than one process
+- storage is initialized before fork
+
+all processes will share the same connection, 
+which is `something you'd better avoid <http://initd.org/psycopg/docs/usage.html#thread-safety>`__.
+
+The solution is to use storage-returning function instead of storage object:
+
+.. code-block:: python
+
+    #   this function will be called once for each request
+    def storage_func():
         conn = psycopg2.connect(connstr)
         return engine.PGStorage(conn, schema_name)
+    
+    #   nothing else changes, engine.setup is called with function as second arg
+    engine.setup(dm, storage_finc)
 
-[TODO - why function?]
+This way separate storage (and connection) will be used in every process. By the way, this is still not
+a perfect solution - creating connection for every call is slow, there should be one connection
+per process, but this is not a blarghish problem.
 
-PGStorage behaviour can be modified/extended in many ways, few examples are in the cookbook:
+PGStorage can be modified/extended in many ways, few examples are in the cookbook:
 
+- `Authentication <cookbook.html#authentication>`__
 - `Read-only resources <cookbook.html#read-only-resources>`__
 - `Resource access restriction <cookbook.html#resource-access-restriction>`__
 
