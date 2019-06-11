@@ -73,7 +73,7 @@ class DictStorage(BaseStorage):
         instance_data = self._data()[name][id_].copy()
 
         #   Note: DictStorage stores only not-null values, here we add those Nones
-        #   to avoid messing with possible field default values letter
+        #   to avoid messing with possible field default values later
         for field in dm().object(name).fields():
             if field.name not in instance_data and field.stored():
                 instance_data[field.name] = None

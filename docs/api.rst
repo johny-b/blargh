@@ -140,6 +140,23 @@ This is equivalent to:
 Such requests are currently allowed, but **this will probably change in future** and they will return 422.
 
 
+Authentication
+--------------
+
+Blargh user is advised to implement authentication in a following way:
+
+1. Authentication data (should be a dictionary) is somehow obtained by the application - e.g. from JWT, cookies, env variables, hardcoded - whatever.
+2. This dictionary is passed to :code:`get()/post()/put()/patch()/delete()` with keyword 'auth', e.g.
+
+   .. code-block:: python
+    
+        get('cookie', 1, auth={'user_id': 42})
+
+3. Storage has access to the authentication data and deals with it in a desired way.
+
+`Example in the cookbook <cookbook.html#authentication>`__.
+
+
 API layers
 ----------
 
