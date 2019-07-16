@@ -1,9 +1,9 @@
-from .resource import Resource
 from flask import request
 from flask_restful import Resource as FRResource, reqparse
+from blargh.engine import Engine
 import json
 
-class FlaskRestfulResource(FRResource, Resource):
+class Resource(FRResource):
     model = None
     
     ###########
@@ -24,7 +24,7 @@ class FlaskRestfulResource(FRResource, Resource):
             except json.decoder.JSONDecodeError:
                 return {'msg': 'Filter is not a valid json'}, 400, {}
         
-        return super().get(id_, filter_kwargs, depth=depth, auth=auth)
+        return Engine.get(self.model.name, id_, filter_kwargs, depth=depth, auth=auth)
     
     def _get_args(self):
         parser = reqparse.RequestParser()
@@ -38,19 +38,19 @@ class FlaskRestfulResource(FRResource, Resource):
     def delete(self, id_=None, auth=None):
         if id_ is None:
             return {'msg': 'DELETE requires resource ID'}, 400, {}
-        return super().delete(id_, auth=auth)
+        return Engine.delete(self.model.name, id_, auth=auth)
 
     def post(self, id_=None, auth=None):
         if id_ is not None:
             return {'msg': 'POST is allowed only on collection, got id {}'.format(id_)}, 400, {}
-        return super().post(request.get_json(), auth=auth)
+        return Engine.post(self.model.name, request.get_json(), auth=auth)
     
     def put(self, id_=None, auth=None):
         if id_ is None:
             return {'msg': 'PUT requires resource ID'}, 400, {}
-        return super().put(id_, request.get_json(), auth=auth)
+        return Engine.put(self.model.name, id_, request.get_json(), auth=auth)
     
     def patch(self, id_=None, auth=None):
         if id_ is None:
             return {'msg': 'PATCH requires resource ID'}, 400, {}
-        return super().patch(id_, request.get_json(), auth=auth)
+        return Engine.patch(self.model.name, id_, request.get_json(), auth=auth)

@@ -179,52 +179,11 @@ Useful for debugging, or when we want to deal with "incorrect" request in some s
     # raises blargh.exceptions.client.e404
     Engine.delete('cookie', 8)                       
 
-blargh.api.resource.Resource
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+blargh.api.basic
+^^^^^^^^^^^^^^^^
 
-Blargh customiation could be done in various ways. The cleanest way is to create one class for every resource
-and modify this class methods, and :code:`blargh.api.resource.Resource` should be the base class.
-
-Resource methods differ from Engine in two ways:
-    
-- All blargh exceptions are caught and their data/code are returned.
-  Other exceptions are reraised, though this might change in the future and some generic 500 will be returned.
-- Returned tuple contains also headers (an empty dictionary, in the base class).
-
-.. code-block:: python
-    
-    # ... (data model, storage, engine.setup())
-    from blargh.api.resource import Resource
-    
-    class cookie(Resource):
-        model = dm.object('cookie')
-
-        def post(self, in_data):
-            out_data, code, headers = super().post(in_data)
-
-            #   add Location header if resource was created
-            if code == 201:
-                headers['Location'] = 'cookie/{}'.format(out_data['id'])
-            return out_data, code, headers
-            
-
-        def delete(self, id_):
-            return "NOPE, COOKIES ARE FOREVER", 400, {}
-    
-    # returns ({'id': 7, 'type': 'shortbread'}, 201, {})
-    cookie().put(7, {'type': 'shortbread'})  
-
-    # returns ('NOPE, COOKIES ARE FOREVER', 400, {})
-    cookie().delete(8)                       
-    
-    # returns ({'id': 8, 'type': 'muffin'}, 201, {'Location': 'cookie/8'})
-    cookie().post({'type': 'muffin'})
-
-basic
-^^^^^
-
-The same behaviour as :code:`blargh.api.resource.Resource`, but all Resource classes are 
-created in a implicit way. Provides simple function-only interface.
+The same behaviour as :code:`blargh.engine.Engine`, but blargh errors are captured.
+Also adds "headers" to returned tuple, to maintain the same interface as :code:`blargh.api.flask`.
 
 .. code-block:: python
     
@@ -240,14 +199,14 @@ created in a implicit way. Provides simple function-only interface.
     #          404, {})
     delete('cookie', 8)
 
-Integration with Flask
-----------------------
+blargh.api.flask
+^^^^^^^^^^^^^^^^
 
 Flask + REST = `Flask-RESTful <https://flask-restful.readthedocs.io/en/latest>`_.
 
 When you replace two Flask-RESTful classes with their blargh counterparts:
 
-- :code:`flask_restful.Resource` -> :code:`blargh.api.resource.FlaskRestfulResource` 
+- :code:`flask_restful.Resource` -> :code:`blargh.api.flask.Resource` 
 - :code:`flask_restful.Api` -> :code:`blargh.api.flask.Api`.
 
 you should be able to use all Flask-RESTful features together with blargh.
@@ -261,8 +220,7 @@ and `Blargh basic usage <quickstart.html#basic-usage>`__:
     from flask import Flask
     
     #   this replaces `from flask_restful import Resource, Api`
-    from blargh.api.flask import Api
-    from blargh.api.resource import FlaskRestfulResource as Resource
+    from blargh.api.flask import Api, Resource
 
     #   blargh initialization
     from blargh import engine
