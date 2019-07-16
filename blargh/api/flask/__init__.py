@@ -1,2 +1,2 @@
-from .resource import FlaskRestfulResource
+from .resource import Resource
 from .api import Api

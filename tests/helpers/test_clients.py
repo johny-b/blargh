@@ -166,11 +166,11 @@ class FlaskClientAuth(FlaskClient, AuthClient):
         self._app.config['JWT_SECRET_KEY'] = '123soverysecret'
         JWTManager(self._app)
     
-        #   Current state: resource classes are blargh.api.resource.FlaskRestfulResources, 
+        #   Current state: resource classes are blargh.api.flask.Resources, 
         #                  and they know nothing about JWT
         #   Desired state: resource classes have .method_decorators including jwt_auth (above)
         #   Method: "simple" appending to .method_decorators works well for single test,
-        #           but this would require cleanup/reloading after each test (since FlaskRestfulResource was modified). 
+        #           but this would require cleanup/reloading after each test (since flask.Resource was modified). 
         #           Instead, resource classes are substituted with new classes inheriting from old ones.
         new_resources = []
         

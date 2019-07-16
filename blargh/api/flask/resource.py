@@ -3,7 +3,7 @@ from flask_restful import Resource as FRResource, reqparse
 from blargh.engine import Engine
 import json
 
-class FlaskRestfulResource(FRResource):
+class Resource(FRResource):
     model = None
     
     ###########

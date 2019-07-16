@@ -1,4 +1,4 @@
-from .resource import FlaskRestfulResource
+from .resource import Resource
 
 from flask_restful import Api as FRApi
 from blargh.engine import dm
@@ -25,9 +25,9 @@ class Api(FRApi):
             url = path.join(url, str(instance.id()))
             return url
         
-        #   Operation performed only for FlaskRestfulResources.
+        #   Operation performed only for blargh.api.flask.Resources.
         #   Simple flask_restful.Resource is also accepted here.
-        if issubclass(resource, FlaskRestfulResource):
+        if issubclass(resource, Resource):
             obj_name = resource.model.name
             url_field = dm().object(obj_name).field('url')
             if url_field is not None:
@@ -36,7 +36,7 @@ class Api(FRApi):
     def add_default_blargh_resources(self, base):
         for name, model in dm().objects().items():
             #   Create class inheriting from Resource, with model
-            cls = type(name, (FlaskRestfulResource,), {'model': model})
+            cls = type(name, (Resource,), {'model': model})
 
             #   Resource URIs - collection and single element
             collection_url = path.join(base, name)
