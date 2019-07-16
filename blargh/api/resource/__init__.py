@@ -1,1 +1,0 @@
-from .flask_restful_resource import FlaskRestfulResource
