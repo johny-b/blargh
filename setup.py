@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='blargh',  
-    version='0.0.2',
+    version='0.0.3',
     author='Jan Betley',
     author_email='jan.betley@gmail.com',
     description='Generic REST API base',
@@ -21,4 +21,4 @@ setuptools.setup(
     ],
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
- )
+)
