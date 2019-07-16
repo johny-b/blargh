@@ -94,32 +94,6 @@ Simple authentication - each user has access only to resources created by her.
                     'details': {'msg': 'resource does not exist, at least for you, hehehe'}}}, 
          404, {})
 
-If one uses `Resource base class <api.html#blargh-api-resource-resource>`__, something like this should do the job:
-
-.. code-block:: python
-
-    from blargh.api.resource import Resource
-    
-    def get_auth_data():
-        return {'user_id': 42}
-
-    def add_auth_data(f):
-        def authenticated_call(*args, **kwargs):
-            return f(*args, **kwargs, auth=get_auth_data())
-        return authenticated_call
-
-    class AuthResource(Resource):
-        post = add_auth_data(Resource.post)
-        put = add_auth_data(Resource.put)
-        get = add_auth_data(Resource.get)
-        patch = add_auth_data(Resource.patch)
-        delete = add_auth_data(Resource.delete)
-    
-    #   And AuthResource is our new base class
-    class Cookie(AuthResource):
-        model = dm.object('cookie')
-
-
 
 Custom Field class 1
 --------------------
