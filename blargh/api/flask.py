@@ -4,7 +4,14 @@ from flask_restful import Api as FRApi
 from blargh.engine import dm
 from os import path
 
+from flask import jsonify
+from blargh import exceptions
+
 class Api(FRApi):
+    def init_app(self, app):
+        super().init_app(app)
+        self._register_error_handlers(app)
+
     def add_resource(self, resource, *urls, **kwargs):
         super().add_resource(resource, *urls, **kwargs)
         
@@ -37,3 +44,8 @@ class Api(FRApi):
             
             #   Add resource
             self.add_resource(cls, object_url, collection_url)
+
+    def _register_error_handlers(self, app):
+        def handle_blargh_error(e):
+            return jsonify(e.ext_data()), e.status
+        app.register_error_handler(exceptions.Error, handle_blargh_error)
