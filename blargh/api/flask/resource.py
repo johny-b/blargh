@@ -19,8 +19,11 @@ class Resource(FRResource):
                 filter_kwargs = json.loads(args['filter'])
             except json.decoder.JSONDecodeError:
                 return {'msg': 'Filter is not a valid json'}, 400, {}
+
+        #   Limit - could be None
+        limit = args['limit']
         
-        data, status = Engine.get(self.model.name, id_, filter_kwargs, depth=depth, auth=auth)
+        data, status = Engine.get(self.model.name, id_, filter_kwargs, depth=depth, auth=auth, limit=limit)
         return data, status, {}
     
     def delete(self, id_, auth=None):
@@ -43,4 +46,5 @@ class Resource(FRResource):
         parser = reqparse.RequestParser()
         parser.add_argument('depth', type=int, default=1)
         parser.add_argument('filter', type=str, default='')
+        parser.add_argument('limit', type=int)
         return parser.parse_args(strict=False)
