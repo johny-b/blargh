@@ -57,7 +57,7 @@ def world_transaction(f):
 
 class Engine():
     @world_transaction
-    def get(world, name, id_=None, filter_={}, depth=1, limit=None):
+    def get(world, name, id_=None, filter_={}, depth=1, limit=None, sort=None):
         if id_ is not None:
             instance = world.get_instance(name, id_)
             return instance.repr(depth), 200
@@ -65,6 +65,8 @@ class Engine():
             instances = world.get_instances(name, filter_)
             if limit is not None:
                 instances = instances[:limit]
+            if sort is not None:
+                print("SORT", sort)
             return [instance.repr(depth) for instance in instances], 200
     
     @world_transaction

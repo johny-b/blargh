@@ -54,7 +54,7 @@ class FlaskClient(BaseApiClient):
         self._api = flask.Api(self._app)
         self._api.add_default_blargh_resources('/api')
 
-    def get(self, resource, id_=None, filter_=None, depth=None, limit=None):
+    def get(self, resource, id_=None, filter_=None, depth=None, limit=None, sort=None):
         url_parts = ['' for x in range(6)]
 
         #   Name & id
@@ -70,6 +70,9 @@ class FlaskClient(BaseApiClient):
             params['filter'] = json.dumps(filter_)
         if limit is not None:
             params['limit'] = limit
+        if sort is not None:
+            params['sort'] = json.dumps(sort)
+
         
         url_parts[4] = urlencode(params)
         url = urlunparse(url_parts)

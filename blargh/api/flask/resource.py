@@ -21,6 +21,12 @@ class Resource(FRResource):
                 kwargs['filter_'] = json.loads(args['filter'])
             except json.decoder.JSONDecodeError:
                 return {'msg': 'Filter is not a valid json'}, 400, {}
+
+        if args['sort']:
+            try:
+                kwargs['sort'] = json.loads(args['filter'])
+            except json.decoder.JSONDecodeError:
+                return {'msg': 'sort is not a valid json'}, 400, {}
         
         data, status = Engine.get(self.model.name, id_, **kwargs)
         return data, status, {}
@@ -46,4 +52,5 @@ class Resource(FRResource):
         parser.add_argument('depth', type=int, default=1, location='args')
         parser.add_argument('filter', type=str, default='', location='args')
         parser.add_argument('limit', type=int, location='args')
+        parser.add_argument('sort', type=str, location='args')
         return parser.parse_args(strict=False)
