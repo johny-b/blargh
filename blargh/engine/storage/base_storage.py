@@ -51,10 +51,14 @@ class BaseStorage(ABC):
         '''
 
     @abstractmethod
-    def selected_ids(self, name, data):
+    def selected_ids(self, name, data, sort, limit):
         '''
         :param name: resource name
         :param data: dict, with resource field names as keys
+        :param sort: list of field names instances should be sorted with, with possible '-' prefixes 
+                     indicating descending order, storage does not have to implement this
+        :param limit: non-negative integer indicating max number of instances that should returned,
+                      storage does not have to implement this (and should not if it does not implement sort)
         :returns: sorted list of ids
 
         Return list of ids of all objects for which data is a subset of value returned by .load().

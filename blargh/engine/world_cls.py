@@ -90,8 +90,9 @@ class World():
         return instance
     
     @only_in_transaction
-    def get_instances(self, name, filter_kwargs):
-        '''Returns all instances which representation would be a superset of FILTER_KWARGS'''
+    def get_instances(self, name, filter_kwargs, sort=None, limit=None):
+        '''Returns all instances which representation would be a superset of FILTER_KWARGS,
+        SORTed and LIMITed **only if current storage implements sort/limit**'''
         #   currently searching is allowed only by
         #   *   scalar fields
         #   *   single rel fields 
@@ -117,7 +118,7 @@ class World():
                 raise exceptions.SearchForbidden(object_name=name, field_name=key)
             
         #   Fetch IDs
-        ids = self.storage.selected_ids(name, write_repr)
+        ids = self.storage.selected_ids(name, write_repr, sort=sort, limit=limit)
         
         #   Return created instances
         return [self.get_instance(name, id_) for id_ in ids]

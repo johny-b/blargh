@@ -24,7 +24,7 @@ class Resource(FRResource):
 
         if args['sort']:
             try:
-                kwargs['sort'] = json.loads(args['filter'])
+                kwargs['sort'] = json.loads(args['sort'])
             except json.decoder.JSONDecodeError:
                 return {'msg': 'sort is not a valid json'}, 400, {}
         

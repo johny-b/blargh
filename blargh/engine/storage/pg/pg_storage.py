@@ -142,7 +142,7 @@ class PGStorage(BaseStorage):
         self._q().delete(name, id_)
 
     @capture_psycopg_error
-    def selected_ids(self, this_name, wr):
+    def selected_ids(self, this_name, wr, **kwargs):
         '''
         Return all IDs from table NAME matching WR.
 
