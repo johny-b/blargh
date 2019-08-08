@@ -1,7 +1,7 @@
 '''
 Test 
     *   limit=X in GET on a collection
-    *   sort=??? in GET on a collection
+    *   sort=[list_of_columns] in GET on a collection
 '''
 import pytest
 from example import family
@@ -37,8 +37,30 @@ def test_sort(init_world, get_client, sort, ids):
     client = get_client()
 
     data, status_code, _ = client.get('child', sort=sort, depth=0)
-
     assert status_code == 200
     assert data == ids
 
+@pytest.mark.parametrize('sort, limit, ids', (
+    ([], 2, [1, 2]),
+    (['-id'], 1, [3]),
+    (['father', '-mother'], 2, [3, 1]),
+))
+def test_sort_limit(init_world, get_client, sort, limit, ids):
+    init_world(family.dm)
+    client = get_client()
 
+    data, status_code, _ = client.get('child', sort=sort, limit=limit, depth=0)
+    assert status_code == 200
+    assert data == ids
+
+@pytest.mark.parametrize('filter_, sort, limit, ids', (
+    ({'father': 1}, ['mother'], 1, [1]),
+    ({'father': 1}, ['-mother'], 1, [3]),
+))
+def test_filter_sort_limit(init_world, get_client, filter_, sort, limit, ids):
+    init_world(family.dm)
+    client = get_client()
+
+    data, status_code, _ = client.get('child', filter_=filter_, sort=sort, limit=limit, depth=0)
+    assert status_code == 200
+    assert data == ids
