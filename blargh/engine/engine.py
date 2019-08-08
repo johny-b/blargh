@@ -150,7 +150,7 @@ class Engine():
                 else:
                     reverse = False
                     field_name = sort_name
-                instances.sort(key=lambda i: i.get_val_by_name(field_name).repr(0), reverse=reverse)
+                instances.sort(key=lambda i: i.get_val(i.model.field(field_name, ext=True)).repr(0), reverse=reverse)
     
     @staticmethod
     def _apply_limit(instances, limit):
