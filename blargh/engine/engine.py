@@ -57,12 +57,19 @@ def world_transaction(f):
 
 class Engine():
     @world_transaction
-    def get(world, name, id_=None, filter_={}, depth=1):
+    def get(world, name, id_=None, filter_={}, depth=1, limit=None, sort=None):
         if id_ is not None:
             instance = world.get_instance(name, id_)
             return instance.repr(depth), 200
         else:
-            instances = world.get_instances(name, filter_)
+            #   Currently filter implementation is required in the storage and 
+            #   sort/limit are optional. There is no reason behind it other than legacy.
+            #   
+            #   If the storage implements sort/limit, _apply_sort and _apply_limit here are redundant,
+            #   so one day it would be nice to have something like Storage.implements_limit and Storage.implements_sort
+            instances = world.get_instances(name, filter_, sort, limit)
+            Engine._apply_sort(instances, sort)
+            Engine._apply_limit(instances, limit)
             return [instance.repr(depth) for instance in instances], 200
     
     @world_transaction
@@ -131,3 +138,21 @@ class Engine():
         
         return None, 200
     
+    @staticmethod
+    def _apply_sort(instances, sort):
+        if sort is not None:
+            #   python3 sort is stable so we just sort by one column in loop
+            #   (not the most efficient way probably)
+            for sort_name in reversed(sort):
+                if sort_name.startswith('-'):
+                    reverse = True
+                    field_name = sort_name[1:]
+                else:
+                    reverse = False
+                    field_name = sort_name
+                instances.sort(key=lambda i: i.get_val(i.model.field(field_name, ext=True)).repr(0), reverse=reverse)
+    
+    @staticmethod
+    def _apply_limit(instances, limit):
+        if limit is not None:
+            del instances[limit:]

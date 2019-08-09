@@ -65,6 +65,23 @@ Besides resource name and optional id, ``get()`` accepts also:
           >>> pprint(get('cookie', filter_={'type': 'gingerbread'})[0])
           []
 
+:sort: List of field names with possible '-' prefixes. Not prefixed field denotes ascending sort, prefixed - descending.
+        
+          >>> pprint(get('cookie', sort=['type'])[0])
+          [{'id': 1, 'jar': 1, 'type': 'biscuit'},
+           {'id': 2, 'jar': 1, 'type': 'muffin'},
+           {'id': 3, 'jar': 2, 'type': 'shortbread'}]
+          >>> pprint(get('cookie', sort=['-id'])[0])
+          [{'id': 3, 'jar': 2, 'type': 'shortbread'},
+           {'id': 2, 'jar': 1, 'type': 'muffin'},
+           {'id': 1, 'jar': 1, 'type': 'biscuit'}]
+          >>> pprint(get('cookie', sort=['jar', '-type'])[0])
+          [{'id': 2, 'jar': 1, 'type': 'muffin'},
+           {'id': 1, 'jar': 1, 'type': 'biscuit'},
+           {'id': 3, 'jar': 2, 'type': 'shortbread'}]
+
+:limit: Non-negative integer determining max number of returned objects.
+       
 
 Other arguments (pagination, field selection, more advanced search etc.) will probably be added in the future.
 

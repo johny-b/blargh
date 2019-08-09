@@ -8,19 +8,27 @@ class Resource(FRResource):
     
     def get(self, id_=None, auth=None):
         args = self._get_args()
+        
+        kwargs = {
+            'auth': auth,
+            'depth': args['depth'],
+            'limit': args['limit'],
+            'filter_': {},
+        }
 
-        #   Depth  - this is always set
-        depth = args['depth']
-
-        #   Search - this is optional
-        filter_kwargs = {}
         if args['filter']:
             try:
-                filter_kwargs = json.loads(args['filter'])
+                kwargs['filter_'] = json.loads(args['filter'])
             except json.decoder.JSONDecodeError:
                 return {'msg': 'Filter is not a valid json'}, 400, {}
+
+        if args['sort']:
+            try:
+                kwargs['sort'] = json.loads(args['sort'])
+            except json.decoder.JSONDecodeError:
+                return {'msg': 'sort is not a valid json'}, 400, {}
         
-        data, status = Engine.get(self.model.name, id_, filter_kwargs, depth=depth, auth=auth)
+        data, status = Engine.get(self.model.name, id_, **kwargs)
         return data, status, {}
     
     def delete(self, id_, auth=None):
@@ -41,6 +49,8 @@ class Resource(FRResource):
 
     def _get_args(self):
         parser = reqparse.RequestParser()
-        parser.add_argument('depth', type=int, default=1)
-        parser.add_argument('filter', type=str, default='')
+        parser.add_argument('depth', type=int, default=1, location='args')
+        parser.add_argument('filter', type=str, default='', location='args')
+        parser.add_argument('limit', type=int, location='args')
+        parser.add_argument('sort', type=str, location='args')
         return parser.parse_args(strict=False)

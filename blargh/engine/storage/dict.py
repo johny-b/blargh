@@ -83,7 +83,7 @@ class DictStorage(BaseStorage):
     def delete(self, name, id_):
         del self._data()[name][id_]
 
-    def selected_ids(self, name, data):
+    def selected_ids(self, name, data, **kwargs):
         #   TODO: this is ugly
         items_set = set({k: v for k, v in data.items() if type(v) is not list}.items())
         ids = []

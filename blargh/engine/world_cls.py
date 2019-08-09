@@ -90,34 +90,18 @@ class World():
         return instance
     
     @only_in_transaction
-    def get_instances(self, name, filter_kwargs):
-        '''Returns all instances which representation would be a superset of FILTER_KWARGS'''
-        #   currently searching is allowed only by
-        #   *   scalar fields
-        #   *   single rel fields 
-        #   
-        #   filter_kwargs has external names and repr values, 
-        #   dictionary internal_name -> stored_value is created 
-        #   and than passed to Storage.selected_ids
-        write_repr = {}
+    def get_instances(self, name, filter_kwargs, sort=None, limit=None):
+        '''Returns all instances which representation would be a superset of FILTER_KWARGS,
+        SORTed and LIMITed **only if current storage implements sort/limit**
+
+        NOTE: filter_kwargs and sort both use external column names, straight from the client
+        '''
         model = self.dm.object(name)
-        for key, val in filter_kwargs.items():
-            field = model.field(key, ext=True)
-            if field is None:
-                raise exceptions.FieldDoesNotExist(object_name=name, field_name=key)
-            elif field.rel:
-                if field.multi:
-                    raise exceptions.SearchForbidden(object_name=name, field_name=key)
-                else:
-                    #   REL field filter -> only IDs are alowed
-                    write_repr[field.name] = field.stores.pkey_field().val(val).stored()
-            elif field.stored:
-                write_repr[field.name] = field.val(val).stored()
-            else:
-                raise exceptions.SearchForbidden(object_name=name, field_name=key)
+        write_repr = self._filter_kwargs_2_write_repr(model, filter_kwargs)
+        sort = self._ext_stort_2_int_sort(model, sort)
             
         #   Fetch IDs
-        ids = self.storage.selected_ids(name, write_repr)
+        ids = self.storage.selected_ids(name, write_repr, sort=sort, limit=limit)
         
         #   Return created instances
         return [self.get_instance(name, id_) for id_ in ids]
@@ -179,3 +163,53 @@ class World():
             if instances:
                 return list(instances.values())[0]
 
+    def _filter_kwargs_2_write_repr(self, model, filter_kwargs):
+        '''
+        currently searching is allowed only by
+        *   scalar fields
+        *   single rel fields 
+        
+        filter_kwargs has external names and repr values, 
+        dictionary internal_name -> stored_value is returned
+        '''
+        write_repr = {}
+        for key, val in filter_kwargs.items():
+            field = model.field(key, ext=True)
+            if field is None:
+                raise exceptions.FieldDoesNotExist(object_name=model.name, field_name=key)
+            elif field.rel:
+                if field.multi:
+                    raise exceptions.SearchForbidden(object_name=model.name, field_name=key)
+                else:
+                    #   REL field filter -> only IDs are alowed
+                    write_repr[field.name] = field.stores.pkey_field().val(val).stored()
+            elif field.stored:
+                write_repr[field.name] = field.val(val).stored()
+            else:
+                raise exceptions.SearchForbidden(object_name=model.name, field_name=key)
+
+        return write_repr
+
+    def _ext_stort_2_int_sort(self, model, ext_sort):
+        '''
+        IN: [some_ext_name, -other_ext_name] etc
+        OUT: #int_column_name   reversed
+            [
+             (some_int_name,    False),
+             (other_int_name,   True),
+            ]
+        '''
+        if not ext_sort:
+            return []
+
+        res = []
+        for name in ext_sort:
+            if name.startswith('-'):
+                ext_name = name[1:]
+                reversed_ = True
+            else:
+                ext_name = name
+                reversed_ = False
+            int_name = model.field(ext_name, ext=True).name
+            res.append((int_name, reversed_))
+        return res
