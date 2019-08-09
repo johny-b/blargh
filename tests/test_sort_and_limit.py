@@ -7,7 +7,7 @@ import pytest
 from example import family
 from blargh.engine import dm
 
-@pytest.mark.parametrize('ids, kwargs', (
+params = (
     ([], {'limit': 0}),
     ([1], {'limit': 1}),
     ([1, 2], {'limit': 2}),
@@ -25,15 +25,21 @@ from blargh.engine import dm
     ([3, 1], {'sort': ['dad', '-mother'], 'limit': 2}),
     ([1], {'filter_': {'dad': 1}, 'limit': 1, 'sort': ['mother']}),
     ([3], {'filter_': {'dad': 1}, 'limit': 1, 'sort': ['-mother']}),
-))
+)
+@pytest.mark.parametrize('ids, kwargs', params)
 def test_sort_and_limit(init_world, get_client, ids, kwargs):
+    client = prepare(init_world, get_client)
+
+    data, status_code, _ = client.get('child', depth=0, **kwargs)
+
+    assert status_code == 200
+    assert data == ids
+
+def prepare(init_world, get_client):
     init_world(family.dm)
     client = get_client()
 
     #   sorting uses external names so it would be nice to have at least one different from internal name
     dm().object('child').field('father').ext_name = 'dad'
 
-    data, status_code, _ = client.get('child', depth=0, **kwargs)
-
-    assert status_code == 200
-    assert data == ids
+    return client
