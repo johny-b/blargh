@@ -142,18 +142,34 @@ class PGStorage(BaseStorage):
         self._q().delete(name, id_)
 
     @capture_psycopg_error
-    def selected_ids(self, this_name, wr, **kwargs):
+    def selected_ids(self, this_name, wr, sort, limit):
         '''
-        Return all IDs from table NAME matching WR.
+        Return IDs from table NAME matching WR. 
+        SORT and LIMIT are ignored (storages are allwed to ignore those parameters, they are applied
+        later in Enigne.get).
 
-        WR might contain
-            *   values for NAME table columns
-            *   values for single rel fields, not necesarly stored in table NAME
+        HOW IT SHOULD BE DONE
 
-        We split searching for ids into two parts:
-            1.  Find all IDs from table NAME matching this table columns
-            2.  For each rel field, not stored in NAME, find ids from the corresponding table
-        and than return intersection of all those id lists.
+        1. WR is interpreted as WHERE
+        2. SORT becomes ORDER BY
+        3. LIMIT becomes LIMIT
+        and everything is processed in a single query.
+
+        That would be easy if we assumed that all REL fields have information stored in THIS_NAME table
+        but unfortunately REL field could be stored on any table, so instead
+        of WHEREs we might get some JOINS and this becomes more complicated.
+
+        HOW IT IS CURRENLY DONE
+
+        1.  WR is split into two parts:
+            *   one select for THIS_NAME table with all possible WHEREs
+            *   one select for each joined table with REL field stored on the other side
+        2.  Intersection of IDs from all selects is returned
+        3.  SORT and LIMIT are ignored. SORT is ignored because there is no way of implementing it
+            different from both:
+                *   HOW IT SHOULD BE DONE above
+                *   sorting in Engine.get
+            and LIMIT is ignored because SORTing first is necesary.
         '''
         model = dm().object(this_name)
         
