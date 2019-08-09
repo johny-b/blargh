@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='blargh',  
-    version='0.0.4',
+    version='0.0.5',
     author='Jan Betley',
     author_email='jan.betley@gmail.com',
     description='Generic REST API base',
