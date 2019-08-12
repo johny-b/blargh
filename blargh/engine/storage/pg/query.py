@@ -30,9 +30,20 @@ class Query():
 
     def select(self, name, cond, ids=None, sort=None, limit=None):
         q = self._select_sql(name, cond, ids)
-        print("IDS", ids)
-        if ids:
-            print(q, cond)
+        
+        if sort:
+            sort_by = []
+            for col_name, desc in sort:
+                order = 'DESC' if desc else 'ASC'
+                sort_by.append('{} {}'.format(col_name, order))
+            sort_by_str = ', '.join(sort_by)
+            q = q + 'ORDER BY ' + sort_by_str
+        
+        if limit is not None:
+            q = q + ' LIMIT ' + str(limit)
+
+        print(q)
+
         return self._run_query(q, cond, True)
 
     #   SQL EXECUTION
@@ -97,8 +108,9 @@ class Query():
 
             pkey_name = self._pkeys[name]
 
-            select = sql.SQL(' ').join([sql.SQL(select), and_, sql.SQL(pkey_name), sql.SQL('='), sql.SQL('any ('), values, sql.SQL(')')])
-            print(select.as_string(self._conn))
+            select = sql.SQL(' ').join([sql.SQL(select), and_, sql.SQL(pkey_name), 
+                                        sql.SQL('='), sql.SQL('any ('), values, sql.SQL(')')])
+            select = select.as_string(self._conn)
 
         return select
 

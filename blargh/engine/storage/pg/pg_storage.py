@@ -199,7 +199,7 @@ class PGStorage(BaseStorage):
 
         #   Default sort - ID ascending
         if not sort:
-            sort = {model.pkey_field().name: False}
+            sort = [(model.pkey_field().name, False)]
 
         #   Execute select
         full_data = self._q().select(name, this_table_cond, ids, sort, limit)
