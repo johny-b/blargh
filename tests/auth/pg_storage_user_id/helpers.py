@@ -16,9 +16,9 @@ class UserIdQuery(engine.storage.pg.Query):
             raise exceptions.e401()
         return auth['user_id']
     
-    def select(self, name, data):
-        data['user_id'] = self._user_id()
-        return super().select(name, data)
+    def select(self, name, cond={}, other_cond={}, sort=None, limit=None):
+        cond['user_id'] = self._user_id()
+        return super().select(name, cond)
 
     def upsert(self, name, data):
         data['user_id'] = self._user_id()

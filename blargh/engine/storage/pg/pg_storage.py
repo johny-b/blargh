@@ -142,7 +142,7 @@ class PGStorage(BaseStorage):
         self._q().delete(name, id_)
 
     @capture_psycopg_error
-    def selected_ids(self, this_name, wr, sort, limit):
+    def selected_ids(self, name, wr, sort, limit):
         '''
         Return IDs from table NAME matching WR. 
         SORT and LIMIT are ignored (storages are allwed to ignore those parameters, they are applied
@@ -171,36 +171,70 @@ class PGStorage(BaseStorage):
                 *   sorting in Engine.get
             and LIMIT is ignored because SORTing first is necesary.
         '''
-        model = dm().object(this_name)
-        
-        #   First, split to parts
-        this_table_wr = {}
-        other_selects = []
+        selected_data = self._selected_data(name, wr, sort, limit)
+
+        model = dm().object(name)
+        pkey_name = model.pkey_field().name
+        return [x[pkey_name] for x in selected_data]
+
+    def _selected_data(self, name, wr, sort, limit):
+        model = dm().object(name)
+        this_table_cond = {}
+        ids = None
+
         for key, val in wr.items():
-            if key in self._q().table_columns(this_name):
-                this_table_wr[key] = val
+            if key in self._q().table_columns(name):
+                this_table_cond[key] = val
             else:
                 field = model.field(key)
-                other_name = field.stores.name
                 other_field_name = field.other.name
+                other_name = field.stores.name
                 other_pkey_name = dm().object(other_name).pkey_field().name
-                other_selects.append((other_name, other_field_name, {other_pkey_name: val}))
+                other_our_data = self._selected_data(other_name, {other_pkey_name: val}, None, None)
+                other_our_ids = set([i[other_field_name] for i in other_our_data])
+                if not ids:
+                    ids = other_our_ids
+                else:
+                    ids.intersection_update(other_our_ids)
 
-        #   List of sets of ids, to be intersected later
-        sets_of_ids = []
+        #   Default sort - ID ascending
+        if not sort:
+            sort = {model.pkey_field().name: False}
 
-        #   This table ids
-        this_table_objects = self._select_objects(this_name, this_table_wr)
-        this_pkey_name = model.pkey_field().name
-        sets_of_ids.append(set([x[this_pkey_name] for x in this_table_objects]))
+        #   Execute select
+        full_data = self._q().select(name, this_table_cond, ids, sort, limit)
+        return full_data
+            
+        # model = dm().object(this_name)
+        # 
+        # #   First, split to parts
+        # this_table_wr = {}
+        # other_selects = []
+        # for key, val in wr.items():
+        #     if key in self._q().table_columns(this_name):
+        #         this_table_wr[key] = val
+        #     else:
+        #         field = model.field(key)
+        #         other_name = field.stores.name
+        #         other_field_name = field.other.name
+        #         other_pkey_name = dm().object(other_name).pkey_field().name
+        #         other_selects.append((other_name, other_field_name, {other_pkey_name: val}))
 
-        #   Other tables ids
-        for other_name, other_fk_name, other_table_wr in other_selects:
-            other_table_objects = self._select_objects(other_name, other_table_wr)
-            sets_of_ids.append(set([x[other_fk_name] for x in other_table_objects]))
+        # #   List of sets of ids, to be intersected later
+        # sets_of_ids = []
 
-        #   Final ids
-        return sorted(set.intersection(*sets_of_ids))
+        # #   This table ids
+        # this_table_objects = self._select_objects(this_name, this_table_wr)
+        # this_pkey_name = model.pkey_field().name
+        # sets_of_ids.append(set([x[this_pkey_name] for x in this_table_objects]))
+
+        # #   Other tables ids
+        # for other_name, other_fk_name, other_table_wr in other_selects:
+        #     other_table_objects = self._select_objects(other_name, other_table_wr)
+        #     sets_of_ids.append(set([x[other_fk_name] for x in other_table_objects]))
+
+        # #   Final ids
+        # return sorted(set.intersection(*sets_of_ids))
 
     @capture_psycopg_error
     def _select_objects(self, name, wr):

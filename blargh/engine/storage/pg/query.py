@@ -28,8 +28,11 @@ class Query():
 
         return self._run_query(q, all_columns_data, False)
 
-    def select(self, name, cond={}):
-        q = self._select_sql(name, cond)
+    def select(self, name, cond, ids=None, sort=None, limit=None):
+        q = self._select_sql(name, cond, ids)
+        print("IDS", ids)
+        if ids:
+            print(q, cond)
         return self._run_query(q, cond, True)
 
     #   SQL EXECUTION
@@ -75,12 +78,28 @@ class Query():
         
         return q.as_string(self._conn)
 
-    def _select_sql(self, name, cond):
+    def _select_sql(self, name, cond, ids):
         select = self._select_all_sql(name)
+        
+        if cond or ids is not None:
+            select = 'WITH a AS ({}) SELECT * FROM a WHERE '.format(select)
+
         if cond:
             where = self._where_sql(name, cond)
-            select = 'WITH a AS ({}) SELECT * FROM a'.format(select)
             select = ' '.join([select, where])
+
+        if ids is not None:
+            values = sql.Literal(list(ids))
+            if cond:
+                and_ = sql.SQL(' AND ')
+            else:
+                and_ = sql.SQL(' ')
+
+            pkey_name = self._pkeys[name]
+
+            select = sql.SQL(' ').join([sql.SQL(select), and_, sql.SQL(pkey_name), sql.SQL('='), sql.SQL('any ('), values, sql.SQL(')')])
+            print(select.as_string(self._conn))
+
         return select
 
     def _select_all_sql(self, name):
@@ -156,7 +175,7 @@ FROM    {table_schema}.{table_name}
 '''
 
 query_str['where'] = '''
-WHERE   ({columns}) = ({values})
+({columns}) = ({values})
 '''
 
 #   ADDITIONAL SQL
