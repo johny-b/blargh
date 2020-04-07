@@ -62,15 +62,29 @@ class Engine():
             instance = world.get_instance(name, id_)
             return instance.repr(depth), 200
         else:
+            instances = world.get_instances(name, filter_, sort, limit)
+            if depth > 0 and instances:
+                Engine._create_neighbours(world, instances)
+
             #   Currently filter implementation is required in the storage and 
             #   sort/limit are optional. There is no reason behind it other than legacy.
             #   
             #   If the storage implements sort/limit, _apply_sort and _apply_limit here are redundant,
             #   so one day it would be nice to have something like Storage.implements_limit and Storage.implements_sort
-            instances = world.get_instances(name, filter_, sort, limit)
             Engine._apply_sort(instances, sort)
             Engine._apply_limit(instances, limit)
             return [instance.repr(depth) for instance in instances], 200
+
+    def _create_neighbours(world, instances):
+        model = instances[0].model
+        for field in model.fields():
+            if field.rel:
+                ids = [instance.get_val(field).stored() for instance in instances]
+                if field.multi:
+                    ids = [id_ for instance_ids in ids for id_ in instance_ids]
+                print("INSTANCES FOR", field.name)
+                world.get_instances_by_ids(field.stores.name, ids)
+        
     
     @world_transaction
     def post(world, name, val):

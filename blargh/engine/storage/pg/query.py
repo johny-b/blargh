@@ -90,11 +90,15 @@ class Query():
         return q.as_string(self._conn)
 
     def _where_sql(self, name, cond):
-        columns = [sql.Identifier(name) for name in cond.keys()]
-        values = [sql.Placeholder(name) for name in cond.keys()]
-        
-        q = self._sql_template(name, 'where')
-        q = q.format(columns=sql.SQL(', ').join(columns), values=sql.SQL(', ').join(values))
+        if len(cond) == 1 and type(list(cond.values())[0]) is list:
+            (key, val), = cond.items()
+            q = sql.SQL('WHERE ') + sql.Identifier(key) + sql.SQL(' = ANY(') + sql.Placeholder(key) + sql.SQL(')')
+        else:
+            columns = [sql.Identifier(name) for name in cond.keys()]
+            values = [sql.Placeholder(name) for name in cond.keys()]
+            
+            q = self._sql_template(name, 'where')
+            q = q.format(columns=sql.SQL(', ').join(columns), values=sql.SQL(', ').join(values))
 
         return q.as_string(self._conn)
     
