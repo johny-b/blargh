@@ -80,26 +80,22 @@ class World():
 
     @only_in_transaction
     def get_instances_by_ids(self, name, ids):
-        instances = []
-
-        clean_ids = []
-        for id_ in ids:
-            #   ID_ is either a string or a number, only way to
-            #   guess which is really pkey is to parse it using object's pkey field
-            obj = self.dm.object(name)
-            pkey_field = obj.pkey_field()
-            clean_ids.append(pkey_field.val(id_).stored())
+        #   ID_ is either a string or a number, only way to
+        #   guess which is really pkey is to parse it using object's pkey field.
+        #   Possible dupliacates are also removed here.
+        ids = [self.dm.object(name).pkey_field().val(id_).stored() for id_ in set(ids)]
         
         #   Find already created instances 
+        instances = []
         new_ids = []
-        for id_ in clean_ids:
+        for id_ in ids:
             if id_ in self._current_instances[name]:
                 instances.append(self._current_instances[name][id_])
             else:
                 new_ids.append(id_)
 
         if new_ids:
-            instances_data = self.storage.load_many(name, ids)
+            instances_data = self.storage.load_many(name, new_ids)
             instances += [self._create_instance(name, d) for d in instances_data]
         return instances
     

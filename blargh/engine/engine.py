@@ -82,7 +82,7 @@ class Engine():
                 ids = [instance.get_val(field).stored() for instance in instances]
                 if field.multi:
                     ids = [id_ for instance_ids in ids for id_ in instance_ids]
-                print("INSTANCES FOR", field.name)
+                ids = sorted(set(ids))
                 world.get_instances_by_ids(field.stores.name, ids)
         
     
