@@ -72,10 +72,13 @@ class Engine():
             Engine._apply_sort(instances, sort)
             Engine._apply_limit(instances, limit)
 
-            if instances and depth > 1:
+            if instances and depth > 0:
                 #   This is never necesary (instances will be created either way),
                 #   but might speed up the process - storage will be retriving 
-                #   multiple instances at once
+                #   multiple instances at once.
+                #   For most use cases the condition should be 'depth > 1', because
+                #   rel fields are not expanded for depth==0, but we might have
+                #   e.g. Calc fields that use some rel field. This might be considered a TODO.
                 Engine._create_neighbours(world, instances)
 
             return [instance.repr(depth) for instance in instances], 200

@@ -32,6 +32,13 @@ class Query():
         q = self._select_sql(name, cond)
         return self._run_query(q, cond, True)
 
+    def pkey_select(self, name, pkey_name, ids):
+        where = sql.SQL('{} = ANY({})').format(sql.Identifier(pkey_name), sql.Placeholder(pkey_name))
+        where = where.as_string(self._conn)
+        select = self._select_all_sql(name)
+        select = 'WITH a AS ({}) SELECT * FROM a WHERE {}'.format(select, where)
+        return self._run_query(select, {pkey_name: ids}, True)
+
     #   SQL EXECUTION
     def _run_query(self, q, args, fetch_result):
         cur = self._conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
@@ -90,15 +97,11 @@ class Query():
         return q.as_string(self._conn)
 
     def _where_sql(self, name, cond):
-        if len(cond) == 1 and type(list(cond.values())[0]) is list:
-            (key, val), = cond.items()
-            q = sql.SQL('WHERE ') + sql.Identifier(key) + sql.SQL(' = ANY(') + sql.Placeholder(key) + sql.SQL(')')
-        else:
-            columns = [sql.Identifier(name) for name in cond.keys()]
-            values = [sql.Placeholder(name) for name in cond.keys()]
-            
-            q = self._sql_template(name, 'where')
-            q = q.format(columns=sql.SQL(', ').join(columns), values=sql.SQL(', ').join(values))
+        columns = [sql.Identifier(name) for name in cond.keys()]
+        values = [sql.Placeholder(name) for name in cond.keys()]
+        
+        q = self._sql_template(name, 'where')
+        q = q.format(columns=sql.SQL(', ').join(columns), values=sql.SQL(', ').join(values))
 
         return q.as_string(self._conn)
     
