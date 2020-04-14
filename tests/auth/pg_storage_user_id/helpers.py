@@ -24,6 +24,13 @@ class UserIdQuery(engine.storage.pg.Query):
         data['user_id'] = self._user_id()
         return super().upsert(name, data)
 
+    def pkey_select(self, name, pkey_name, ids):
+        #   This could be done in many way, the easiest way is to use "simple" select multiple times
+        result = []
+        for id_ in ids:
+            result += self.select(name, {pkey_name: id_})
+        return result
+
 def init_cookies_with_user_id():
     '''
     Init cookies world with user_id.
