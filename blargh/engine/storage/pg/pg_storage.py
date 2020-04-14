@@ -250,7 +250,7 @@ class PGStorage(BaseStorage):
             cursor = self._conn.cursor()
             cursor.execute("SELECT {}".format(default_expr))
             val = cursor.fetchone()[0]
-            if self._q().pkey_select(name, pkey_name, val):
+            if self._q().pkey_select(name, pkey_name, [val]):
                 if old_val == val:
                     raise exceptions.ProgrammingError('Pkey value generator returned twice the same value. \
                                                       Table: {}, val: {}'.format(name, val))
