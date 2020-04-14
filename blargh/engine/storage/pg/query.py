@@ -32,13 +32,6 @@ class Query():
         q = self._select_sql(name, cond)
         return self._run_query(q, cond, True)
 
-    def pkey_select(self, name, pkey_name, ids):
-        where = sql.SQL('{} = ANY({})').format(sql.Identifier(pkey_name), sql.Placeholder(pkey_name))
-        where = where.as_string(self._conn)
-        select = self._select_all_sql(name)
-        select = 'WITH a AS ({}) SELECT * FROM a WHERE {}'.format(select, where)
-        return self._run_query(select, {pkey_name: ids}, True)
-
     #   SQL EXECUTION
     def _run_query(self, q, args, fetch_result):
         cur = self._conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
@@ -86,8 +79,7 @@ class Query():
         select = self._select_all_sql(name)
         if cond:
             where = self._where_sql(name, cond)
-            select = 'WITH a AS ({}) SELECT * FROM a'.format(select)
-            select = ' '.join([select, where])
+            select = 'WITH a AS ({}) SELECT * FROM a {}'.format(select, where)
         return select
 
     def _select_all_sql(self, name):
@@ -97,13 +89,18 @@ class Query():
         return q.as_string(self._conn)
 
     def _where_sql(self, name, cond):
-        columns = [sql.Identifier(name) for name in cond.keys()]
-        values = [sql.Placeholder(name) for name in cond.keys()]
-        
-        q = self._sql_template(name, 'where')
-        q = q.format(columns=sql.SQL(', ').join(columns), values=sql.SQL(', ').join(values))
+        parts = []
+        for key, val in cond.items():
+            if type(val) is list:
+                template = sql.SQL('{} = ANY({})')
+            else:
+                template = sql.SQL('{} = {}')
+            template = template.format(sql.Identifier(key), sql.Placeholder(key))
+            parts.append(template)
 
-        return q.as_string(self._conn)
+        where = sql.SQL('WHERE ') + sql.SQL(' AND ').join(parts)
+
+        return where.as_string(self._conn)
     
     def _sql_template(self, resource_name, query_name):
         return sql.SQL(query_str[query_name])
@@ -160,10 +157,6 @@ WHERE   {pkey_name} = %(pkey_val)s
 query_str['select'] = '''
 SELECT  *
 FROM    {table_schema}.{table_name}
-'''
-
-query_str['where'] = '''
-WHERE   ({columns}) = ({values})
 '''
 
 #   ADDITIONAL SQL

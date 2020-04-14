@@ -122,7 +122,7 @@ class PGStorage(BaseStorage):
         #   Determine column name
         pkey_name = dm().object(name).pkey_field().name
         
-        stored_data = self._q().pkey_select(name, pkey_name, ids)
+        stored_data = self._select_objects(name, {pkey_name: ids})
         if len(stored_data) != len(ids):
             got_ids = [d[pkey_name] for d in stored_data]
             missing_ids = [id_ for id_ in ids if id_ not in got_ids]
@@ -250,7 +250,7 @@ class PGStorage(BaseStorage):
             cursor = self._conn.cursor()
             cursor.execute("SELECT {}".format(default_expr))
             val = cursor.fetchone()[0]
-            if self._q().pkey_select(name, pkey_name, [val]):
+            if self._select_objects(name, {pkey_name: val}):
                 if old_val == val:
                     raise exceptions.ProgrammingError('Pkey value generator returned twice the same value. \
                                                       Table: {}, val: {}'.format(name, val))
@@ -307,7 +307,7 @@ class PGStorage(BaseStorage):
             if field.rel and name not in data[0]:
                 other_name = field.stores.name
                 other_field_name = field.other.name
-                all_related = self._q().pkey_select(other_name, other_field_name, ids)
+                all_related = self._select_objects(other_name, {other_field_name: ids})
 
                 related_pkey_name = dm().object(other_name).pkey_field().name
                 for el in data:
