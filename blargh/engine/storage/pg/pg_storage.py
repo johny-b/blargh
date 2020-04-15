@@ -112,15 +112,23 @@ class PGStorage(BaseStorage):
 
     @capture_psycopg_error
     def load(self, name, id_):
+        return self.load_many(name, [id_])[0]
+
+    @capture_psycopg_error
+    def load_many(self, name, ids):
+        if not ids:
+            return []
+
         #   Determine column name
         pkey_name = dm().object(name).pkey_field().name
         
-        stored_data = self._q().select(name, {pkey_name: id_})
-        if not stored_data:
-            raise exceptions.e404(object_name=name, object_id=id_)
+        stored_data = self._select_objects(name, {pkey_name: ids})
+        if len(stored_data) != len(ids):
+            got_ids = [d[pkey_name] for d in stored_data]
+            missing_ids = [id_ for id_ in ids if id_ not in got_ids]
+            raise exceptions.e404(object_name=name, object_id=missing_ids[0])
         
-        instance_data = stored_data[0]
-        full_data = self._add_virtual_columns(name, instance_data)
+        full_data = self._add_virtual_columns(name, stored_data)
         return full_data
 
     @capture_psycopg_error
@@ -242,7 +250,7 @@ class PGStorage(BaseStorage):
             cursor = self._conn.cursor()
             cursor.execute("SELECT {}".format(default_expr))
             val = cursor.fetchone()[0]
-            if self._q().select(name, {pkey_name: val}):
+            if self._select_objects(name, {pkey_name: val}):
                 if old_val == val:
                     raise exceptions.ProgrammingError('Pkey value generator returned twice the same value. \
                                                       Table: {}, val: {}'.format(name, val))
@@ -290,22 +298,23 @@ class PGStorage(BaseStorage):
 
         This operation should reverse _remove_virtual_columns.
         '''
-        #   Determine ID
+        #   Determine IDs
         pkey_name = dm().object(this_name).pkey_field().name
-        id_ = data[pkey_name]
+        ids = [d[pkey_name] for d in data]
 
         for field in dm().object(this_name).fields():
             name = field.name
-            if field.rel and name not in data:
+            if field.rel and name not in data[0]:
                 other_name = field.stores.name
                 other_field_name = field.other.name
-                all_related = self._q().select(other_name, {other_field_name: id_})
+                all_related = self._select_objects(other_name, {other_field_name: ids})
 
                 related_pkey_name = dm().object(other_name).pkey_field().name
-                related_ids = [x[related_pkey_name] for x in all_related]
-
-                if field.multi:
-                    data[name] = related_ids
-                else:
-                    data[name] = related_ids[0] if related_ids else None
+                for el in data:
+                    this_related = [x for x in all_related if x[other_field_name] == el[pkey_name]]
+                    related_ids = [x[related_pkey_name] for x in this_related]
+                    if field.multi:
+                        el[name] = related_ids
+                    else:
+                        el[name] = related_ids[0] if related_ids else None
         return data

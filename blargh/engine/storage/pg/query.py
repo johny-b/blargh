@@ -79,8 +79,7 @@ class Query():
         select = self._select_all_sql(name)
         if cond:
             where = self._where_sql(name, cond)
-            select = 'WITH a AS ({}) SELECT * FROM a'.format(select)
-            select = ' '.join([select, where])
+            select = 'WITH a AS ({}) SELECT * FROM a {}'.format(select, where)
         return select
 
     def _select_all_sql(self, name):
@@ -90,13 +89,18 @@ class Query():
         return q.as_string(self._conn)
 
     def _where_sql(self, name, cond):
-        columns = [sql.Identifier(name) for name in cond.keys()]
-        values = [sql.Placeholder(name) for name in cond.keys()]
-        
-        q = self._sql_template(name, 'where')
-        q = q.format(columns=sql.SQL(', ').join(columns), values=sql.SQL(', ').join(values))
+        parts = []
+        for key, val in cond.items():
+            if type(val) is list:
+                template = sql.SQL('{} = ANY({})')
+            else:
+                template = sql.SQL('{} = {}')
+            template = template.format(sql.Identifier(key), sql.Placeholder(key))
+            parts.append(template)
 
-        return q.as_string(self._conn)
+        where = sql.SQL('WHERE ') + sql.SQL(' AND ').join(parts)
+
+        return where.as_string(self._conn)
     
     def _sql_template(self, resource_name, query_name):
         return sql.SQL(query_str[query_name])
@@ -153,10 +157,6 @@ WHERE   {pkey_name} = %(pkey_val)s
 query_str['select'] = '''
 SELECT  *
 FROM    {table_schema}.{table_name}
-'''
-
-query_str['where'] = '''
-WHERE   ({columns}) = ({values})
 '''
 
 #   ADDITIONAL SQL

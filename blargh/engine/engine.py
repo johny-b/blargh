@@ -62,15 +62,27 @@ class Engine():
             instance = world.get_instance(name, id_)
             return instance.repr(depth), 200
         else:
+            instances = world.get_instances(name, filter_, sort, limit)
+
             #   Currently filter implementation is required in the storage and 
             #   sort/limit are optional. There is no reason behind it other than legacy.
             #   
             #   If the storage implements sort/limit, _apply_sort and _apply_limit here are redundant,
             #   so one day it would be nice to have something like Storage.implements_limit and Storage.implements_sort
-            instances = world.get_instances(name, filter_, sort, limit)
             Engine._apply_sort(instances, sort)
             Engine._apply_limit(instances, limit)
+
+            if instances and depth > 0:
+                #   This is never necesary (instances will be created either way),
+                #   but might speed up the process - storage will be retriving 
+                #   multiple instances at once.
+                #   For most use cases the condition should be 'depth > 1', because
+                #   rel fields are not expanded for depth==0, but we might have
+                #   e.g. Calc fields that use some rel field. This might be considered a TODO.
+                Engine._create_neighbours(world, instances)
+
             return [instance.repr(depth) for instance in instances], 200
+        
     
     @world_transaction
     def post(world, name, val):
@@ -156,3 +168,16 @@ class Engine():
     def _apply_limit(instances, limit):
         if limit is not None:
             del instances[limit:]
+
+    def _create_neighbours(world, instances):
+        '''
+        Create all instances on connected fields.
+        '''
+        model = instances[0].model
+        for field in model.fields():
+            if field.rel:
+                ids = [instance.get_val(field).stored() for instance in instances]
+                if field.multi:
+                    ids = [id_ for instance_ids in ids for id_ in instance_ids]
+                
+                world.get_instances_by_ids(field.stores.name, ids)
