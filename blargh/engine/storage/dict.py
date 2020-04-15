@@ -67,18 +67,24 @@ class DictStorage(BaseStorage):
         return d
 
     def load(self, name, id_):
-        if id_ not in self._data()[name]:
-            raise exceptions.e404(object_name=name, object_id=id_)
+        return self.load_many(name, [id_])[0]
+
+    def load_many(self, name, ids):
+        data = []
+        for id_ in ids:
+            if id_ not in self._data()[name]:
+                raise exceptions.e404(object_name=name, object_id=id_)
         
-        instance_data = self._data()[name][id_].copy()
+            instance_data = self._data()[name][id_].copy()
 
-        #   Note: DictStorage stores only not-null values, here we add those Nones
-        #   to avoid messing with possible field default values later
-        for field in dm().object(name).fields():
-            if field.name not in instance_data and field.stored():
-                instance_data[field.name] = None
+            #   Note: DictStorage stores only not-null values, here we add those Nones
+            #   to avoid messing with possible field default values later
+            for field in dm().object(name).fields():
+                if field.name not in instance_data and field.stored():
+                    instance_data[field.name] = None
 
-        return instance_data
+            data.append(instance_data)
+        return data
 
     def delete(self, name, id_):
         del self._data()[name][id_]

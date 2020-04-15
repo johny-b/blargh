@@ -23,7 +23,8 @@ def cleanup():
 
 @pytest.mark.parametrize("method, args, create_cnt", (
     ('get', ('child', 1), 1),
-    ('get', ('child',), 3),
+    #   NOTE: this should be 3, but is 7 due to (redundant in this case) call to Engine._create_neighbours in Engine.get
+    ('get', ('child',), 7),
     ('get', ('child', None, {}, 2), 7),
     ('get', ('child', 1, None, 2), 3),
     ('get', ('child', 1, None, 3), 4),

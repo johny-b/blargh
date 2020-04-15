@@ -76,18 +76,28 @@ class World():
     @only_in_transaction
     def get_instance(self, name, id_):
         '''Fetch instance from storage. Raises 404 if instance does not exist'''
+        return self.get_instances_by_ids(name, [id_])[0]
+
+    @only_in_transaction
+    def get_instances_by_ids(self, name, ids):
         #   ID_ is either a string or a number, only way to
-        #   guess which is really pkey is to parse it using object's pkey field
-        obj = self.dm.object(name)
-        pkey_field = obj.pkey_field()
-        id_ = pkey_field.val(id_).stored()
-    
-        if id_ in self._current_instances[name]:
-            instance = self._current_instances[name][id_]
-        else:
-            instance_data = self.storage.load(name, id_)
-            instance = self._create_instance(name, instance_data)
-        return instance
+        #   guess which is really pkey is to parse it using object's pkey field.
+        #   Possible dupliacates are also removed here.
+        ids = [self.dm.object(name).pkey_field().val(id_).stored() for id_ in set(ids)]
+        
+        #   Find already created instances 
+        instances = []
+        new_ids = []
+        for id_ in ids:
+            if id_ in self._current_instances[name]:
+                instances.append(self._current_instances[name][id_])
+            else:
+                new_ids.append(id_)
+
+        if new_ids:
+            instances_data = self.storage.load_many(name, new_ids)
+            instances += [self._create_instance(name, d) for d in instances_data]
+        return instances
     
     @only_in_transaction
     def get_instances(self, name, filter_kwargs, sort=None, limit=None):
@@ -102,9 +112,8 @@ class World():
             
         #   Fetch IDs
         ids = self.storage.selected_ids(name, write_repr, sort=sort, limit=limit)
-        
-        #   Return created instances
-        return [self.get_instance(name, id_) for id_ in ids]
+
+        return self.get_instances_by_ids(name, ids)
     
     @only_in_transaction
     def write(self):
