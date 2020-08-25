@@ -83,5 +83,5 @@ def test_setter_patch(init_world, get_client, jar_id, cookie_cnt):
     add_cookie_cnt_field()
     client = get_client()
 
-    client.patch('jar', jar_id, {'cookie_cnt': cookie_cnt})
+    assert client.patch('jar', jar_id, {'cookie_cnt': cookie_cnt})[1] == 200
     assert len(client.get('jar', jar_id)[0]['cookies']) == cookie_cnt

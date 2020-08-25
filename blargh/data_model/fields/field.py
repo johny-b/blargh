@@ -167,7 +167,7 @@ class Calc(Field):
     
     @staticmethod
     def _default_setter(instance, value):
-        raise exceptions.ProgrammingError("attempt to set value to Calc field without defined setter")
+        raise exceptions.ClientError("attempt to set value to Calc field without defined setter")
 
     def __init__(self, *args, getter=None, setter=None, **kwargs):
         if kwargs.get('hidden'):
