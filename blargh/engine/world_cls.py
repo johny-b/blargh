@@ -12,25 +12,25 @@ class World():
     '''
     IS THIS A REAL WORLD?
     '''
-    
+
     def __init__(self, dm, storage):
         self.dm = dm
         self.storage = storage
-        
+
         self._current_instances = {}
         for name in self.dm.objects():
             self._current_instances[name] = {}
 
         self._auth = {}
         self._transaction_in_progress = False
-    
+
     #   TRANSACTION MANAGMENT
     def begin(self):
         if self._any_instance():
             raise exceptions.ProgrammingError("Begin requires empty world")
         self._transaction_in_progress = True
         self.storage.begin()
-    
+
     @only_in_transaction
     def commit(self):
         if self._any_instance():
@@ -59,7 +59,7 @@ class World():
 
     def remove_auth(self):
         self._auth = {}
-    
+
     #   DATA MODIFICATINS
     @only_in_transaction
     def new_instance(self, name, id_=None):
@@ -68,11 +68,11 @@ class World():
             id_ = self.storage.next_id(name)
 
         pkey_field = self.dm.object(name).pkey_field()
-        instance = self._create_instance(name, {pkey_field.name: id_})
+        instance = self._create_instance(name, {pkey_field.name: id_}, first=True)
         instance.changed_fields.add(pkey_field)
 
         return instance
-    
+
     @only_in_transaction
     def get_instance(self, name, id_):
         '''Fetch instance from storage. Raises 404 if instance does not exist'''
@@ -84,8 +84,8 @@ class World():
         #   guess which is really pkey is to parse it using object's pkey field.
         #   Possible dupliacates are also removed here.
         ids = [self.dm.object(name).pkey_field().val(id_).stored() for id_ in set(ids)]
-        
-        #   Find already created instances 
+
+        #   Find already created instances
         instances = []
         new_ids = []
         for id_ in ids:
@@ -98,7 +98,7 @@ class World():
             instances_data = self.storage.load_many(name, new_ids)
             instances += [self._create_instance(name, d) for d in instances_data]
         return instances
-    
+
     @only_in_transaction
     def get_instances(self, name, filter_kwargs, sort=None, limit=None):
         '''Returns all instances which representation would be a superset of FILTER_KWARGS,
@@ -109,12 +109,12 @@ class World():
         model = self.dm.object(name)
         write_repr = self._filter_kwargs_2_write_repr(model, filter_kwargs)
         sort = self._ext_stort_2_int_sort(model, sort)
-            
+
         #   Fetch IDs
         ids = self.storage.selected_ids(name, write_repr, sort=sort, limit=limit)
 
         return self.get_instances_by_ids(name, ids)
-    
+
     @only_in_transaction
     def write(self):
         '''
@@ -125,11 +125,11 @@ class World():
             instance = self._any_instance()
             if instance is None:
                 break
-            
+
             #   save instance, if changed
             if instance.changed():
                 self.storage.save(instance)
-        
+
             #   Foreget about this instance
             name = instance.model.name
             id_ = instance.id()
@@ -137,7 +137,7 @@ class World():
 
             #   And make it no longer usable
             instance.usable = False
-    
+
     @only_in_transaction
     def remove_instance(self, instance):
         '''
@@ -145,27 +145,39 @@ class World():
         '''
         name = instance.model.name
         id_ = instance.id()
-        
+
         #   Remove from storage and current instances
         self.storage.delete(name, id_)
         del self._current_instances[name][id_]
-    
+
     #   OTHER METHODS
-    def get_instance_class(self, name):
-        '''Returns instance class for NAME objects. Currently always blargh.engine.Instance'''
+    @classmethod
+    def set_instance_class(cls, func):
+        cls._get_instance_class = func
+
+    @classmethod
+    def get_instance_class(cls, name):
+        return cls._get_instance_class(name)
+
+    @staticmethod
+    def _get_instance_class(name):
+        '''
+        This might be overwritten in set_instance_class
+        '''
         return Instance
 
     def data(self):
         '''Returns copy of all storage data. Debug/testing only.'''
         from copy import deepcopy
         return deepcopy(self.storage.data())
-    
-    def _create_instance(self, name, data):
+
+    def _create_instance(self, name, data, first=False):
         model = self.dm.object(name)
-        instance = Instance(model, data)
+        instance_cls = type(self)._get_instance_class(name)
+        instance = instance_cls(model, data, first)
         self._current_instances[model.name][instance.id()] = instance
         return instance
-    
+
     def _any_instance(self):
         '''Returns any already created instance, or None if there are no current instances'''
         for instances in self._current_instances.values():
@@ -176,9 +188,9 @@ class World():
         '''
         currently searching is allowed only by
         *   scalar fields
-        *   single rel fields 
-        
-        filter_kwargs has external names and repr values, 
+        *   single rel fields
+
+        filter_kwargs has external names and repr values,
         dictionary internal_name -> stored_value is returned
         '''
         write_repr = {}
