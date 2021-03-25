@@ -68,7 +68,7 @@ def create_tested_dm(dm):
     #   Remove calc fields
     for obj in tested_dm._objects.values():
         obj._fields = [f for f in obj._fields if type(f) is not fields.Calc]
-    
+
     #   This is quite ugly
     if tested_dm.name == 'family':
         tested_dm.object('female').field('children').ext_name = 'mother_of'
@@ -98,7 +98,7 @@ ADD CONSTRAINT cookie_jar_fkey
     return sql, dm
 
 @pytest.mark.parametrize("schema_sql, dm", (
-    (cookies.pg_schema_sql, cookies.dm), 
+    (cookies.pg_schema_sql, cookies.dm),
     (family.pg_schema_sql, family.dm),
     cascade_cookies(),
 ))
@@ -109,6 +109,6 @@ def test_pg_schema_import(schema_sql, dm):
 
     #   And this is created datamodel
     pg_schema_dm = schema_sql_2_dm(schema_sql, tested_dm.name)
-    
+
     #   Test
     assert pg_schema_dm == tested_dm

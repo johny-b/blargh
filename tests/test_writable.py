@@ -48,13 +48,13 @@ params = (
     (1, 400, 'patch', ('cookie', 1, {'type': 'donut'})),
     (1, 400, 'patch', ('cookie', 2, {'type': 'donut'})),
     (1, 400, 'patch', ('cookie', 3, {'type': 'donut'})),
-    
+
     #   Note: from the "cookie" point of view, those two calls are the same (cookie stays in it's jar),
     #   but they have different results. This is intended - only explicit updates are really forbidden,
     #   such as the first case, but implicit updates take place only when something really changes.
     (2, 400, 'patch', ('cookie', 3, {'jar': 2})),
     (2, 200, 'patch', ('jar', 2, {'cookies': [3]})),
-    
+
     #   Here we have two times 400 - both requests modify third cookie's jar
     (2, 400, 'patch', ('cookie', 3, {'jar': 1})),
     (2, 400, 'patch', ('jar', 1, {'cookies': [1, 2, 3]})),
@@ -66,12 +66,12 @@ params = (
     (2, 400, 'patch', ('jar', 2, {'cookies': [1]})),
     (2, 400, 'patch', ('jar', 1, {'cookies': []})),
     (2, 400, 'patch', ('jar', 2, {'cookies': []})),
-    
+
     #   All cookie creations should be valid
     (2, 201, 'post', ('cookie', {})),
     (2, 201, 'post', ('cookie', {'jar': 1})),
 
-    #   Removing jar with cookies is also not allowed 
+    #   Removing jar with cookies is also not allowed
     (2, 400, 'delete', ('jar', 1)),
     (2, 400, 'delete', ('jar', 1)),
 )
@@ -83,7 +83,7 @@ def test_writable_1(init_world, get_client, mod_nr, expected_status, method, arg
     func_name = 'set_writable_{}'.format(mod_nr)
     eval(func_name)()
     client = get_client()
-    
+
     #   TEST
     data, status, headers = getattr(client, method)(*args)
     assert status == expected_status

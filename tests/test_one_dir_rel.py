@@ -47,7 +47,7 @@ def init_cookies_with_shelf_2(init_world):
     jar = dm.object('jar')
     jar.add_field(Rel('shelf', stores=shelf, multi=False))
     init_world(dm)
-    
+
     #   If this is PG storage, we need to update database schema
     if issubclass(type(world().storage), PGStorage):
         conn = world().storage._conn
@@ -59,14 +59,14 @@ def test_one_dir_1(init_world, get_client):
     #   1.  Init world
     init_cookies_with_shelf_1(init_world)
     client = get_client()
-    
+
     #   2.  Save current world state, for further comparisions
     world_data = world().data()
 
     #   3.  Create a shelf with both jars
     data, status, headers = client.put('shelf', 1, {'jars': [1, 2]})
     assert status == 201
-    
+
     #   4.  Check if world data didn't change (except shelf)
     new_world_data = world().data()
     assert new_world_data['cookie'] == world_data['cookie']
@@ -106,7 +106,7 @@ def test_one_dir_2(init_world, get_client):
     assert status_3 == 200
     assert jar_1['shelf'] == shelf
     assert 'shelf' not in jar_2
-    
+
     #   5.  Test 404
     data, status, headers = client.patch('jar', 1, {'shelf': 2})
     assert status == 404

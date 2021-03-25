@@ -14,7 +14,7 @@ def test_get_cache(get_client):
     init_dict_world(family.dm)
     client = get_client()
 
-    #   1.  Initial check - first child should have name 'c1' (if has different, 
+    #   1.  Initial check - first child should have name 'c1' (if has different,
     #       something is seriously wrong and the rest of the test makes no sence)
     data, status_code, *headers = client.get('child', 1)
     assert data['name'] == 'c1'
@@ -28,7 +28,7 @@ def test_get_cache(get_client):
 
 
 @pytest.mark.parametrize("method, args", (
-    ('post', ('cookie', {})), 
+    ('post', ('cookie', {})),
     ('put', ('cookie', 1, {})),
     ('put', ('cookie', 7, {})),
 ))
@@ -73,7 +73,7 @@ def test_implicit_fields_patch(get_client):
     ''')
 
     #   Create fresh cookie
-    data, status, headers = client.put('cookie', 4, {'type': 'donut'}) 
+    data, status, headers = client.put('cookie', 4, {'type': 'donut'})
     assert status == 201
     assert data['type'] == 'donut'
 
@@ -86,7 +86,7 @@ def test_implicit_fields_patch(get_client):
     data, status, headers = client.patch('cookie', 4, {'type': 'doesnt matter'})
     assert status == 200
     assert data['type'] == 'type_set_by_trigger'
-    
+
     #   Make sure it's still a triggered type
     data, status, headers = client.get('cookie', 4)
     assert status == 200
@@ -97,48 +97,48 @@ def test_implicit_fields_patch(get_client):
 Test returned data
 '''
 get_params = [
-    (1,   'child',  dict(id_=1, depth=0)),                                          # noqa: E241
-    (2,   'child',  dict(id_=1, depth=1)),                                          # noqa: E241
-    (3,   'child',  dict(id_=1, depth=2)),                                          # noqa: E241
-    (4,   'child',  dict(id_=1, depth=3)),                                          # noqa: E241
-    (5,   'child',  dict(id_=1, depth=4)),                                          # noqa: E241
-    (6,   'child',  dict(depth=0)),                                                 # noqa: E241
-    (7,   'child',  dict(depth=1)),                                                 # noqa: E241
-    (8,   'child',  dict(filter_=dict(name='c1'))),                                 # noqa: E241
-    (9,   'child',  dict(filter_=dict(name='NIEMA'))),                              # noqa: E241
-    (10,  'female', dict(depth=1, filter_=dict(name='f1'))),                        # noqa: E241
+    (1, 'child', dict(id_=1, depth=0)),                                          # noqa: E241
+    (2, 'child', dict(id_=1, depth=1)),                                          # noqa: E241
+    (3, 'child', dict(id_=1, depth=2)),                                          # noqa: E241
+    (4, 'child', dict(id_=1, depth=3)),                                          # noqa: E241
+    (5, 'child', dict(id_=1, depth=4)),                                          # noqa: E241
+    (6, 'child', dict(depth=0)),                                                 # noqa: E241
+    (7, 'child', dict(depth=1)),                                                 # noqa: E241
+    (8, 'child', dict(filter_=dict(name='c1'))),                                 # noqa: E241
+    (9, 'child', dict(filter_=dict(name='NIEMA'))),                              # noqa: E241
+    (10, 'female', dict(depth=1, filter_=dict(name='f1'))),                        # noqa: E241
 
     # Note: filter is 'id', but get param is 'id_' - this is intended, 'id' is an external name
-    (11,  'female', dict(depth=1, filter_={'id': 2})),                              # noqa: E241
+    (11, 'female', dict(depth=1, filter_={'id': 2})),                              # noqa: E241
 
-    (12,  'child',  dict(depth=0, filter_={'father': 1})),                          # noqa: E241
-    (13,  'child',  dict(depth=0, filter_={'father': 1, 'name': 'c1'})),            # noqa: E241
-    (14,  'child',  dict(depth=0, filter_={'father': 1, 'name': 'c2'})),            # noqa: E241
-    (15,  'female', dict(depth=0, filter_={'name': 'f1'})),                         # noqa: E241
-    (15,  'female', dict(depth=0, filter_={'husband': 1})),                         # noqa: E241
-    (15,  'female', dict(depth=0, filter_={'husband': 1, 'name': 'f1'})),           # noqa: E241
-    (15,  'female', dict(depth=0, filter_={'husband': 1, 'id': 1})),                # noqa: E241
-    (15,  'female', dict(depth=0, filter_={'husband': 1, 'id': 1, 'name': 'f1'})),  # noqa: E241
-    (0,   'female', dict(depth=0, filter_={'husband': 1, 'id': 1, 'name': 'f2'})),  # noqa: E241
-    (0,   'female', dict(depth=0, filter_={'husband': 3})),                         # noqa: E241
-    (0,   'female', dict(depth=0, filter_={'husband': 1, 'name': 'f2'})),           # noqa: E241
-    (0,   'female', dict(depth=0, filter_={'husband': 1, 'id': 2})),                # noqa: E241
-    (0,   'female', dict(depth=0, filter_={'husband': 1, 'id': 2})),                # noqa: E241
-    (16,  'male',   dict(depth=0, filter_={'name': 'm1'})),                         # noqa: E241
-    (16,  'male',   dict(depth=0, filter_={'wife': 1})),                            # noqa: E241
-    (16,  'male',   dict(depth=0, filter_={'wife': 1, 'name': 'm1'})),              # noqa: E241
-    (16,  'male',   dict(depth=0, filter_={'wife': 1, 'id': 1})),                   # noqa: E241
-    (16,  'male',   dict(depth=0, filter_={'wife': 1, 'id': 1, 'name': 'm1'})),     # noqa: E241
-    (0,   'male',   dict(depth=0, filter_={'wife': 1, 'id': 2, 'name': 'm1'})),     # noqa: E241
-    (0,   'male',   dict(depth=0, filter_={'wife': 3})),                            # noqa: E241
-    (0,   'male',   dict(depth=0, filter_={'wife': 1, 'name': 'm2'})),              # noqa: E241
-    (0,   'male',   dict(depth=0, filter_={'wife': 1, 'id': 2})),                   # noqa: E241
-    (17,  'child',  dict(depth=0, filter_={'father': 1, 'mother': 1})),             # noqa: E241
-    (18,  'child',  dict(depth=0, filter_={'father': 1, 'mother': 2})),             # noqa: E241
-    (19,  'child',  dict(depth=0, filter_={'father': 2, 'mother': 2})),             # noqa: E241
-    (0,   'child',  dict(depth=0, filter_={'father': 2, 'mother': 1})),             # noqa: E241
-    (0,   'child',  dict(depth=0, filter_={'father': 3, 'mother': 1})),             # noqa: E241
-    (0,   'child',  dict(depth=0, filter_={'father': 1, 'mother': 3})),             # noqa: E241
+    (12, 'child', dict(depth=0, filter_={'father': 1})),                          # noqa: E241
+    (13, 'child', dict(depth=0, filter_={'father': 1, 'name': 'c1'})),            # noqa: E241
+    (14, 'child', dict(depth=0, filter_={'father': 1, 'name': 'c2'})),            # noqa: E241
+    (15, 'female', dict(depth=0, filter_={'name': 'f1'})),                         # noqa: E241
+    (15, 'female', dict(depth=0, filter_={'husband': 1})),                         # noqa: E241
+    (15, 'female', dict(depth=0, filter_={'husband': 1, 'name': 'f1'})),           # noqa: E241
+    (15, 'female', dict(depth=0, filter_={'husband': 1, 'id': 1})),                # noqa: E241
+    (15, 'female', dict(depth=0, filter_={'husband': 1, 'id': 1, 'name': 'f1'})),  # noqa: E241
+    (0, 'female', dict(depth=0, filter_={'husband': 1, 'id': 1, 'name': 'f2'})),  # noqa: E241
+    (0, 'female', dict(depth=0, filter_={'husband': 3})),                         # noqa: E241
+    (0, 'female', dict(depth=0, filter_={'husband': 1, 'name': 'f2'})),           # noqa: E241
+    (0, 'female', dict(depth=0, filter_={'husband': 1, 'id': 2})),                # noqa: E241
+    (0, 'female', dict(depth=0, filter_={'husband': 1, 'id': 2})),                # noqa: E241
+    (16, 'male', dict(depth=0, filter_={'name': 'm1'})),                         # noqa: E241
+    (16, 'male', dict(depth=0, filter_={'wife': 1})),                            # noqa: E241
+    (16, 'male', dict(depth=0, filter_={'wife': 1, 'name': 'm1'})),              # noqa: E241
+    (16, 'male', dict(depth=0, filter_={'wife': 1, 'id': 1})),                   # noqa: E241
+    (16, 'male', dict(depth=0, filter_={'wife': 1, 'id': 1, 'name': 'm1'})),     # noqa: E241
+    (0, 'male', dict(depth=0, filter_={'wife': 1, 'id': 2, 'name': 'm1'})),     # noqa: E241
+    (0, 'male', dict(depth=0, filter_={'wife': 3})),                            # noqa: E241
+    (0, 'male', dict(depth=0, filter_={'wife': 1, 'name': 'm2'})),              # noqa: E241
+    (0, 'male', dict(depth=0, filter_={'wife': 1, 'id': 2})),                   # noqa: E241
+    (17, 'child', dict(depth=0, filter_={'father': 1, 'mother': 1})),             # noqa: E241
+    (18, 'child', dict(depth=0, filter_={'father': 1, 'mother': 2})),             # noqa: E241
+    (19, 'child', dict(depth=0, filter_={'father': 2, 'mother': 2})),             # noqa: E241
+    (0, 'child', dict(depth=0, filter_={'father': 2, 'mother': 1})),             # noqa: E241
+    (0, 'child', dict(depth=0, filter_={'father': 3, 'mother': 1})),             # noqa: E241
+    (0, 'child', dict(depth=0, filter_={'father': 1, 'mother': 3})),             # noqa: E241
 ]
 @pytest.mark.parametrize("data_id, resource, kwargs", get_params)
 def test_base_get_family(init_world, get_client, resource, kwargs, data_id):

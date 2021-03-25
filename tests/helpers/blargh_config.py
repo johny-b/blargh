@@ -60,7 +60,7 @@ def fill_world(create_function):
     #   create_function commits changes, and after commit
     #   world (sometimes) is not usable, so here we recreate it
     engine.init_world()
-     
+
 def _init_world(dm, create_storage):
     #   in case anything messed up our data model
     #   (currently api/flask does)
@@ -70,7 +70,7 @@ def _init_world(dm, create_storage):
 
 def init_dict_world(dm, create_function=None):
     data = {}
-    
+
     storage = engine.DictStorage(data)
 
     _init_world(dm, storage)
@@ -82,7 +82,7 @@ def init_pickled_dict_world(dm, create_function=None):
         os.remove(fname)
     except OSError:
         pass
-    
+
     def storage():
         return engine.PickledDictStorage(fname)
 
@@ -98,13 +98,13 @@ def init_pg_world(dm, create_function=None):
     if connstr is None:
         pytest.skip("env variable PGS_CONNSTR is not set -> PGStorage is not tested")
     connection = psycopg2.connect(connstr)
-        
+
     #   Prepare temporary schema
     create_schema_sql = eval(dm.name).pg_schema_sql
     connection.cursor().execute('SET search_path TO pg_temp')
     connection.cursor().execute(create_schema_sql)
     connection.commit()
-    
+
     #   Find temp schema name
     cur = connection.cursor()
     cur.execute('SELECT nspname FROM pg_namespace WHERE oid = pg_my_temp_schema()')

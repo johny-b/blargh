@@ -2,6 +2,7 @@
 Separated to keep tests/test_get.py more readable.
 '''
 
+from .blargh_config import modify_expected_data
 import copy
 d = {
     0: [],
@@ -196,7 +197,6 @@ d = {
     19: [2],
 }
 
-from .blargh_config import modify_expected_data
 
 def expected_get_data(test_nr, client):
     res = copy.deepcopy(d[test_nr])

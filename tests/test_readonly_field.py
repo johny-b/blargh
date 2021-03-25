@@ -14,7 +14,7 @@ import pytest
 def test_male_children(init_world, get_client, resource, data):
     init_world(cookies.dm)
     client = get_client()
-    
+
     #   Check before changes
     assert client.post(resource, data)[1] == 201
     assert client.put(resource, 1, data)[1] == 201

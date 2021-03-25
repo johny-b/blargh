@@ -16,13 +16,13 @@ params = [
     ('delete', 200, ('child', 2), None),
 
     #   post/put/patch creating other objects
-    ('post', 201, ('male', {'name': 'm3', 'children': [{}, {}]}), 
+    ('post', 201, ('male', {'name': 'm3', 'children': [{}, {}]}),
         {'name': 'm3', 'id': 3, 'url': 'male/3', 'children': [4, 5]}),
-    ('put', 201, ('male', 3, {'name': 'm3', 'children': [{}], 'wife': {}}), 
+    ('put', 201, ('male', 3, {'name': 'm3', 'children': [{}], 'wife': {}}),
         {'name': 'm3', 'id': 3, 'url': 'male/3', 'children': [4], 'wife': 3}),
-    ('patch', 200, ('male', 1, {'children': [{}], 'wife': {}}), 
+    ('patch', 200, ('male', 1, {'children': [{}], 'wife': {}}),
         {'name': 'm1', 'id': 1, 'url': 'male/1', 'children': [4], 'wife': 3}),
-    ('patch', 200, ('male', 1, {'children': [{'mother': 2}, {}, 1], 'wife': {}}), 
+    ('patch', 200, ('male', 1, {'children': [{'mother': 2}, {}, 1], 'wife': {}}),
         {'name': 'm1', 'id': 1, 'url': 'male/1', 'children': [1, 4, 5], 'wife': 3}),
 ]
 
@@ -34,6 +34,6 @@ def test_api_expected(init_world, get_client, method, expected_status, args, exp
     expected_data = modify_expected_data(expected_data, client)
 
     data, status, headers = getattr(client, method)(*args)
-    
+
     assert status == expected_status
     assert data == expected_data

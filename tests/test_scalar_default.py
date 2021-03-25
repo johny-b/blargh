@@ -15,10 +15,10 @@ def test_api_expected(init_world, get_client):
     data, status, headers = client.post('cookie', {'type': 'muffin'})
     assert status == 201
     assert data['type'] == 'muffin'
-    
+
     #   Set default
     dm().object('cookie').field('type').default = 'donut'
-    
+
     #   Check after change
     data, status, headers = client.post('cookie', {})
     assert status == 201

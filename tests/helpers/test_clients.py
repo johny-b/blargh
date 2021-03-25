@@ -73,7 +73,6 @@ class FlaskClient(BaseApiClient):
         if sort is not None:
             params['sort'] = json.dumps(sort)
 
-
         url_parts[4] = urlencode(params)
         url = urlunparse(url_parts)
 

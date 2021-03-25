@@ -44,7 +44,7 @@ def test_cookies_with_weight(get_client, status, method, args):
     conn.cursor().execute('ALTER TABLE cookie ADD COLUMN weight float DEFAULT 33.33')
     conn.commit()
     world().storage._q()._table_columns_data = {}  # delete table info cache
-    
+
     #   get has kwargs, other have args
     if method == 'get':
         assert getattr(client, method)('cookie', **args)[1] == status

@@ -1,5 +1,5 @@
 
-        
+
 def related(instance, field_name):
     '''
     Returns related object/list of related objects for rel field FIELD_NAME.
@@ -17,4 +17,3 @@ def related(instance, field_name):
             return instances[0]
         else:
             return None
-

@@ -11,7 +11,7 @@ from tests.auth.pg_storage_user_id.helpers import init_cookies_with_user_id
     (2, 'cookie', 1, 404),
     (2, 'cookie', 2, 404),
     (2, 'cookie', 3, 200),
-    
+
     (1, 'jar', 1, 200),
     (1, 'jar', 2, 404),
     (2, 'jar', 1, 404),

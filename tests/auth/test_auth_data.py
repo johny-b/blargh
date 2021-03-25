@@ -31,7 +31,7 @@ def check_correct_auth(f, expected_auth):
         #   Check if we run on proper auth
         world = args[0]
         assert world.get_auth() == expected_auth
-        
+
         #   Nothing else changes
         return f(*args, **kwargs)
     return wrapped
@@ -45,7 +45,7 @@ def check_no_auth(f):
         #   Check if we run on proper auth
         world = args[0]
         assert bool(world.get_auth()) is False
-        
+
         #   Nothing else changes
         return f(*args, **kwargs)
     return wrapped
@@ -56,15 +56,15 @@ def add_world_wrappers(func, *args):
     w.get_instance = func(w.get_instance, *args)
     w.get_instances = func(w.get_instances, *args)
     w.write = func(w.write, *args)
-    
+
 #   Tested calls
-calls = (('get', 'cookie'), ('post', 'cookie', {}), ('put', 'cookie', 11, {}), 
+calls = (('get', 'cookie'), ('post', 'cookie', {}), ('put', 'cookie', 11, {}),
          ('patch', 'cookie', 1, {'jar': 2}), ('delete', 'cookie', 1),
          ('get', 'cookie', 77), ('post', 'cookie', {'foo': 'bar'}), ('delete', 'jar', 7))
-    
+
 #   Tested auth data
 auth_data = (
-    {'user_id': 7}, 
+    {'user_id': 7},
     {'f': 'oo', 'b': 'ar'},
     {},
     {'user': {'name': 'a', 'id': 11}},
@@ -76,7 +76,7 @@ def test_engine(init_world, auth_data):
     '''
     #   Initialization
     init_world(cookies.dm)
-    
+
     #   TEST 1. CORRECT AUTH
     #   Add some wrappers
     add_world_wrappers(check_correct_auth, auth_data)
@@ -87,7 +87,7 @@ def test_engine(init_world, auth_data):
             getattr(Engine, method)(*args, auth=auth_data)
         except exceptions.ClientError:
             pass
-    
+
     #   Cleanup
     importlib.reload(world_cls)
 
@@ -112,16 +112,16 @@ def test_client(init_world, get_client, auth_data):
     init_world(cookies.dm)
     client = get_client(auth_required=True)
     client.login(auth_data)
-    
+
     #   TEST 1. CORRECT AUTH
     #   Add some wrappers
     add_world_wrappers(check_correct_auth, auth_data)
-    
+
     #   Test
     for call in calls:
         method, *args = call
         getattr(client, method)(*args)
-    
+
     #   Cleanup
     importlib.reload(world_cls)
 

@@ -21,12 +21,12 @@ all other params are just before function declarations.
 '''
 
 
+from .helpers.blargh_config import init_world_functions, test_clients
 import sys
 sys.path.append('.')
 
 print(sys.path)
 
-from .helpers.blargh_config import init_world_functions, test_clients
 
 def pytest_generate_tests(metafunc):
     #   Each test function somehow creates world().

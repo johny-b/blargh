@@ -12,7 +12,7 @@ params = [
     ('post', ('child', {'name': 'c4'}), {'child': 1}),
     ('post', ('child', {'father': 1, 'name': 'c4'}), {'child': 1}),
     ('post', ('child', {'mother': 1, 'father': 1, 'name': 'c4'}), {'child': 1}),
-    
+
     ('put', ('child', 4, {'name': 'c4'}), {'child': 1}),
     ('put', ('child', 4, {'father': 1, 'name': 'c4'}), {'child': 1}),
     ('put', ('child', 4, {'mother': 1, 'father': 1, 'name': 'c4'}), {'child': 1}),
@@ -49,10 +49,10 @@ def test_api_expected(get_client, method, args, expected_cnts):
     #   Init
     init_pg_world(family.dm)
     client = get_client()
-    
+
     #   Modify storage.pg.Query.upsert() to make it count it's calls per resource type
     cnts = defaultdict(int)
-    
+
     def wrap_create_storage(create_storage):
         def wrapped_create_storage(*args, **kwargs):
             storage = create_storage(*args, **kwargs)
@@ -72,6 +72,6 @@ def test_api_expected(get_client, method, args, expected_cnts):
 
     #   Test
     data, status, headers = getattr(client, method)(*args)
-    
+
     assert str(status).startswith('2')
     assert dict(cnts) == expected_cnts

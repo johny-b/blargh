@@ -70,7 +70,7 @@ class WithShelf(engine.storage.pg.Query):
         if name == 'shelf':
             raise ReadonlyResource(object_name='shelf')
         return super().upsert(name, pkey_val)
-    
+
     def default_pkey_expr(self, name, column_name):
         if name == 'shelf':
             raise ReadonlyResource(object_name='shelf')
@@ -87,14 +87,13 @@ def init_cookies_with_shelf():
     jar = dm.object('jar')
     shelf.add_field(Rel('jars', stores=jar, multi=True))
     dm.object('jar').add_field(Rel('shelf', stores=shelf, multi=False))
-    
+
     dm.connect(shelf, 'jars', jar, 'shelf')
-    
-    
+
     #   2.  Init world
     init_pg_world(dm)
-    
-    #   3.  Modify jar table, 
+
+    #   3.  Modify jar table,
     conn = engine.world().storage._conn
     conn.cursor().execute('''
         ALTER TABLE jar ADD COLUMN shelf integer CHECK (shelf IN (1, 2))
@@ -106,14 +105,14 @@ def init_cookies_with_shelf():
 
 @pytest.mark.parametrize("method, expected_status, args, kwargs, expected_data", (
     #   GET should work as usual
-    ('get', 200, ('shelf',), {}, [{'id': 1, 'position': 'top', 'jars': []}, 
+    ('get', 200, ('shelf',), {}, [{'id': 1, 'position': 'top', 'jars': []},
                                   {'id': 2, 'position': 'bottom', 'jars': []}]),
-    ('get', 200, ('shelf',), dict(depth=0), [1, 2]), 
+    ('get', 200, ('shelf',), dict(depth=0), [1, 2]),
     ('get', 200, ('shelf', 2), {}, {'id': 2, 'position': 'bottom', 'jars': []}),
     ('get', 200, ('shelf',), dict(filter_={'position': 'top'}), [{'id': 1, 'position': 'top', 'jars': []}]),
 
     ('get', 400, ('shelf',), dict(filter_={'jars': []}), None),  # no searching by multi rel fields
-    
+
     #   PATCHing shelf/jar relation is allowed in both ways
     ('patch', 200, ('jar', 1, {'shelf': 1}), {}, {'id': 1, 'cookies': [1, 2], 'shelf': 1}),
     ('patch', 200, ('shelf', 1, {'jars': [1, 2]}), {}, {'id': 1, 'position': 'top', 'jars': [1, 2]}),
@@ -121,7 +120,7 @@ def init_cookies_with_shelf():
     #   POSTING fresh jars on shelves is also possible in both ways
     ('post', 201, ('jar', {'shelf': 1}), {}, {'id': 3, 'cookies': [], 'shelf': 1}),
     ('patch', 200, ('shelf', 2, {'jars': [{}, {}]}), {}, {'id': 2, 'position': 'bottom', 'jars': [3, 4]}),
-    
+
     #   PUTing jars is fine as well
     ('put', 201, ('jar', 3, {'shelf': 2}), {}, {'id': 3, 'cookies': [], 'shelf': 2}),
 
@@ -142,26 +141,26 @@ def test_shelf_1(get_client, method, expected_status, args, kwargs, expected_dat
     client = get_client()
 
     data, status, headers = getattr(client, method)(*args, **kwargs)
-    
+
     assert status == expected_status
-    
+
     if expected_data is not None:
         assert data == expected_data
 
 
 @pytest.mark.parametrize("method, expected_status, args, kwargs, expected_data", (
     #   GET
-    ('get', 200, ('shelf',), {}, [{'id': 1, 'position': 'top', 'jars': [1]}, 
+    ('get', 200, ('shelf',), {}, [{'id': 1, 'position': 'top', 'jars': [1]},
                                   {'id': 2, 'position': 'bottom', 'jars': [2]}]),
-    ('get', 200, ('shelf', 1), dict(depth=2), 
-        {'id': 1, 'position': 'top', 'jars': [{'id': 1, 'cookies': [1, 2], 'shelf': 1}]}), 
+    ('get', 200, ('shelf', 1), dict(depth=2),
+        {'id': 1, 'position': 'top', 'jars': [{'id': 1, 'cookies': [1, 2], 'shelf': 1}]}),
 
     #   Add another jar to shelf
-    ('patch', 200, ('shelf', 1, {'jars': [1, {}]}), {}, {'id': 1, 'position': 'top', 'jars': [1, 3]}), 
+    ('patch', 200, ('shelf', 1, {'jars': [1, {}]}), {}, {'id': 1, 'position': 'top', 'jars': [1, 3]}),
 
-    #   Remove jar 
-    ('patch', 200, ('shelf', 1, {'jars': []}), {}, {'id': 1, 'position': 'top', 'jars': []}), 
-    ('patch', 200, ('jar', 2, {'shelf': None}), {}, {'id': 2, 'cookies': [3]}), 
+    #   Remove jar
+    ('patch', 200, ('shelf', 1, {'jars': []}), {}, {'id': 1, 'position': 'top', 'jars': []}),
+    ('patch', 200, ('jar', 2, {'shelf': None}), {}, {'id': 2, 'cookies': [3]}),
 ))
 def test_shelf_2(get_client, method, expected_status, args, kwargs, expected_data):
     '''
@@ -173,12 +172,12 @@ def test_shelf_2(get_client, method, expected_status, args, kwargs, expected_dat
     #   Put jars on shelves
     assert client.patch('jar', 1, {'shelf': 1})[1] == 200
     assert client.patch('jar', 2, {'shelf': 2})[1] == 200
-    
+
     #   Test
     data, status, headers = getattr(client, method)(*args, **kwargs)
-    
+
     assert status == expected_status
-    
+
     if expected_data is not None:
         assert data == expected_data
 
@@ -189,8 +188,8 @@ def test_shelf_2(get_client, method, expected_status, args, kwargs, expected_dat
 #         if 'type' in data and data['type'] != 'donut':
 #             raise exceptions.e400(not_a_donut)
 #         return super().upsert(name, data)
-# 
-# 
+#
+#
 # @pytest.mark.parametrize("method, expected_status, args", (
 #     ('post', 201, ('cookie', {'type': 'donut'})),
 #     ('post', 400, ('cookie', {'type': 'not_a_donut'})),
@@ -204,10 +203,10 @@ def test_shelf_2(get_client, method, expected_status, args, kwargs, expected_dat
 #     init_pg_world(cookies.dm)
 #     client = get_client()
 #     set_query_class(OnlyDonuts)
-# 
+#
 #     data, status, headers = getattr(client, method)(*args)
-#     
+#
 #     assert status == expected_status
-# 
+#
 #     if status == 400:
 #         assert data == {'msg': not_a_donut}
