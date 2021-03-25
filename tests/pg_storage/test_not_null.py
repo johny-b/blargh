@@ -3,7 +3,7 @@ test NOT NULL columns
 '''
 
 from blargh.engine import world
-from tests.helpers.blargh_config import init_pg_world
+from tests.helpers.blargh_config import init_pg_world, pg_connstr
 from example import cookies
 import pytest
 
@@ -19,7 +19,10 @@ def _get_not_null_msg():
     else:
         return 'null value in column "type" of relation "cookie" violates not-null constraint'
 
-not_null_msg = _get_not_null_msg()
+not_null_msg = None
+if pg_connstr() is not None:
+    not_null_msg = _get_not_null_msg()
+
 
 ##############
 #   PATCH    #
