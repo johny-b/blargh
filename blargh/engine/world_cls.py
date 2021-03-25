@@ -1,4 +1,3 @@
-from .instance import Instance
 from .. import exceptions
 
 def only_in_transaction(f):
@@ -13,9 +12,10 @@ class World():
     IS THIS A REAL WORLD?
     '''
 
-    def __init__(self, dm, storage):
+    def __init__(self, dm, storage, get_instance_class):
         self.dm = dm
         self.storage = storage
+        self._get_instance_class = get_instance_class
 
         self._current_instances = {}
         for name in self.dm.objects():
@@ -151,20 +151,8 @@ class World():
         del self._current_instances[name][id_]
 
     #   OTHER METHODS
-    @classmethod
-    def set_instance_class(cls, func):
-        cls._get_instance_class = func
-
-    @classmethod
-    def get_instance_class(cls, name):
-        return cls._get_instance_class(name)
-
-    @staticmethod
-    def _get_instance_class(name):
-        '''
-        This might be overwritten in set_instance_class
-        '''
-        return Instance
+    def get_instance_class(self, name):
+        return self._get_instance_class(name)
 
     def data(self):
         '''Returns copy of all storage data. Debug/testing only.'''
@@ -173,7 +161,7 @@ class World():
 
     def _create_instance(self, name, data, first=False):
         model = self.dm.object(name)
-        instance_cls = type(self)._get_instance_class(name)
+        instance_cls = self.get_instance_class(name)
         instance = instance_cls(model, data, first)
         self._current_instances[model.name][instance.id()] = instance
         return instance
