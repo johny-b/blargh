@@ -1,3 +1,4 @@
+from os import getpid
 _config = {}
 _worlds = {}
 
@@ -5,7 +6,6 @@ conf = {
     'max_retry_cnt': 2,
 }
 
-from os import getpid
 
 def init_world():
     from .world_cls import World
@@ -28,14 +28,14 @@ def setup(dm, create_storage):
     :param dm: data model
     :param create_storage: function returning a Storage object,
                            or just a Storage object (wrapped here in a function)
-    
+
     blargh initialization
-    
+
     '''
     if callable(create_storage):
         create_storage_func = create_storage
     else:
-        create_storage_func = lambda: create_storage  # noqa: E731
+        def create_storage_func(): return create_storage  # noqa: E731
 
     _config['dm'] = dm
     _config['create_storage'] = create_storage_func

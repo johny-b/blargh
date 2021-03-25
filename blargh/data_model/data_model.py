@@ -6,7 +6,7 @@ class DataModel():
         self._objects = {}
         self._relationships = set()
         self.name = name
-    
+
     def objects(self):
         return self._objects.copy()
 
@@ -16,7 +16,7 @@ class DataModel():
     def create_object(self, name):
         self.add_object(Object(name))
         return self.object(name)
-    
+
     def add_object(self, obj):
         name = obj.name
         if self.object(name) is not None:
@@ -38,7 +38,7 @@ class DataModel():
 
         if f1.multi and f2.multi:
             raise NotImplementedError("Connection between two multi fields is not implemented")
-        
+
         if f1.default or f2.default:
             #   Connected fields would require update on existing objects during object creation,
             #   this could probably be done, but causes many additional complications (i.e. what if
@@ -85,7 +85,7 @@ class DataModel():
                     lines += field_lines
 
             lines.append('')
-        
+
         lines.append("# rel fields")
         lines += rel_lines
 
@@ -101,11 +101,11 @@ class DataModel():
 
                     already_connected.add(field)
                     already_connected.add(other_field)
-            
+
         import_lines = []
         for cls in sorted(cls_set, key=lambda x: x.__name__):
             import_lines.append('from {} import {}'.format(cls.__module__, cls.__name__))
-        
+
         lines = import_lines + lines
         return lines
 

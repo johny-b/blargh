@@ -18,10 +18,10 @@ class Query():
             'other_card':  cardinality of TABLE_SCHEMA.other_name
             'cascade':     True/False - are rows from TABLE_SCHEMA.TABLE_NAME cascade deleted?
         }
-        
+
         cardinalities are  '?'/'1'/'*' (could be also '+', but it is never returned)
         '''
-        q = query_str['get_rel_data'] 
+        q = query_str['get_rel_data']
         cur = self._conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cur.execute(q, {'table_schema': table_schema, 'table_name': table_name, 'column_name': column_name})
         return cur.fetchall()[0]
@@ -40,11 +40,11 @@ class Query():
             * fkey: true if it is a FOREIGN KEY column
             * pkey: true if it is a PRIMARY KEY column
         '''
-        q = query_str['get_columns_data'] 
+        q = query_str['get_columns_data']
         cur = self._conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cur.execute(q, {'table_schema': table_schema, 'table_name': table_name})
         data = cur.fetchall()
-        
+
         #   Now in each data row, second element is a Postgresql type ('integer', 'text' etc),
         #   we need to convert it to python type (int, str etc). There is for sure a pretty way of
         #   doing this, since psycopg2 does it all the time, here the simplest possible solution is implemented
@@ -55,7 +55,7 @@ class Query():
             row['type'] = type(cur.fetchone()[0])
 
         return data
-        
+
 
 #   To keep SQL as separate from python code as possible
 query_str = {}

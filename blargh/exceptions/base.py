@@ -11,10 +11,10 @@ class Error(Exception):
             else:
                 kwargs['_additional_msg'] = msg_str
         self.details = kwargs
-    
+
     def __str__(self):
         return '{} ({})\n{}'.format(self.code, self.status, str(self.details))
-    
+
     def ext_data(self):
         return {'error': {'code': self.code.upper(), 'details': self.details}}
 
@@ -22,7 +22,7 @@ class Error(Exception):
 class ClientError(Error):
     '''Exception indicating end-user error. Our code works as intended, 
     it's just used in a wrong way.
-    
+
     This kind of exception will be usually caught and turned into a 4** response code'''
     status = 400
 

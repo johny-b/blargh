@@ -11,7 +11,7 @@ class BaseStorage(ABC):
       * provide object, not function, if possible,
       * or make Storage initialization as simple as possible (e.g. avoid reading large files)
     '''
-    
+
     @abstractmethod
     def __init__(self):
         '''
@@ -45,7 +45,7 @@ class BaseStorage(ABC):
         :param name: resource name
         :param id_: resource id
         :returns: None
-        
+
         Remove from storage object identified by (name, id_).
         Should raise exceptions.e404 if object does not exists.
         '''
@@ -111,7 +111,7 @@ class BaseStorage(ABC):
         Togehter with .begin() and .commit() provides transctional interface.
         Might be left empty if this Storage does not support transactions.
         '''
-    
+
     @abstractmethod
     def data(self):
         '''
