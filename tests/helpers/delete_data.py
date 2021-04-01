@@ -2,6 +2,7 @@
 Expected data for delete() tests
 '''
 
+from blargh.engine import world
 d = {
     'DictStorage': {
         1: {
@@ -65,29 +66,29 @@ d = {
              'jar': {}},
     },
     'PGStorage': {
-        1: {'child': [(1, 'c1', None, 1), 
-                      (2, 'c2', 2, 2), 
+        1: {'child': [(1, 'c1', None, 1),
+                      (2, 'c2', 2, 2),
                       (3, 'c3', None, 2)],
-            'female': [(1, 'f1', None), 
+            'female': [(1, 'f1', None),
                        (2, 'f2', 2)],
             'male': [(2, 'm2')]},
-        2: {'child': [(2, 'c2', 2, 2), 
+        2: {'child': [(2, 'c2', 2, 2),
                       (3, 'c3', 1, 2)],
-            'female': [(1, 'f1', 1), 
+            'female': [(1, 'f1', 1),
                        (2, 'f2', 2)],
-            'male': [(1, 'm1'), 
+            'male': [(1, 'm1'),
                      (2, 'm2')]},
-        3: {'child': [(2, 'c2', 2, None), 
+        3: {'child': [(2, 'c2', 2, None),
                       (3, 'c3', 1, None)],
             'female': [(1, 'f1', 1)],
-            'male': [(1, 'm1'), 
+            'male': [(1, 'm1'),
                      (2, 'm2')]},
-        4: {'child': [(2, 'c2', 2, None), 
+        4: {'child': [(2, 'c2', 2, None),
                       (3, 'c3', 1, None)],
             'female': [],
-            'male': [(1, 'm1'), 
+            'male': [(1, 'm1'),
                      (2, 'm2')]},
-        5: {'child': [(2, 'c2', 2, None), 
+        5: {'child': [(2, 'c2', 2, None),
                       (3, 'c3', None, None)],
             'female': [],
             'male': [(2, 'm2')]},
@@ -101,23 +102,23 @@ d = {
             'female': [],
             'male': []},
         0: {'jar': [(1,), (2,)],
-            'cookie': [(1, 1, 'biscuit'), 
-                       (2, 1, 'muffin'), 
+            'cookie': [(1, 1, 'biscuit'),
+                       (2, 1, 'muffin'),
                        (3, 2, 'shortbread')]},
         9: {'jar': [(1,), (2,)],
-            'cookie': [(2, 1, 'muffin'), 
+            'cookie': [(2, 1, 'muffin'),
                        (3, 2, 'shortbread')]},
         10: {'jar': [(2,)],
-             'cookie': [(1, None, 'biscuit'), 
-                        (2, None, 'muffin'), 
+             'cookie': [(1, None, 'biscuit'),
+                        (2, None, 'muffin'),
                         (3, 2, 'shortbread')]},
         11: {'jar': [(1,)],
-             'cookie': [(1, 1, 'biscuit'), 
-                        (2, 1, 'muffin'), 
+             'cookie': [(1, 1, 'biscuit'),
+                        (2, 1, 'muffin'),
                         (3, None, 'shortbread')]},
         12: {'jar': [],
-             'cookie': [(1, None, 'biscuit'), 
-                        (2, None, 'muffin'), 
+             'cookie': [(1, None, 'biscuit'),
+                        (2, None, 'muffin'),
                         (3, None, 'shortbread')]},
     }
 }
@@ -125,7 +126,6 @@ d = {
 #   The same data
 d['PickledDictStorage'] = d['DictStorage']
 
-from blargh.engine import world
 def expected_delete_data(test_nr):
     import copy
     return copy.deepcopy(d[type(world().storage).__name__][test_nr])

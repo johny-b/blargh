@@ -15,13 +15,13 @@ import importlib
 def test_examples_as_code(tested_dm):
     #   data model code
     dm_code_lines = tested_dm.as_code()
-    
+
     #   create file, to make "real" import
     fname = 'tests/_dm.py'
     with open(fname, 'w') as f:
         f.write("\n".join(dm_code_lines))
 
-    #   import created file 
+    #   import created file
     #   (reloading is be necesary - there is more than one datamodel tested)
     from tests import _dm
     importlib.reload(_dm)
@@ -82,7 +82,7 @@ def test_as_code(dm_text):
     fname = 'tests/_dm.py'
     with open(fname, 'w') as w:
         w.write(dm_text)
-    
+
     #   2.  Import tested data model
     from tests import _dm
     importlib.reload(_dm)
@@ -92,12 +92,12 @@ def test_as_code(dm_text):
     with open(fname_2, 'w') as f:
         f.write("\n".join(_dm.dm.as_code()))
 
-    #   4.  Find all non-empty, not-comment, not-import lines in both files.. 
+    #   4.  Find all non-empty, not-comment, not-import lines in both files..
     with open(fname, 'r') as f:
         lines_1 = f.readlines()
     with open(fname_2, 'r') as f:
         lines_2 = f.readlines()
-    
+
     def data_model_line(line):
         return not (line.startswith('#') or
                     'import' in line or
@@ -105,6 +105,6 @@ def test_as_code(dm_text):
                     )
     lines_1 = [l for l in lines_1 if data_model_line(l)]
     lines_2 = [l for l in lines_2 if data_model_line(l)]
-     
+
     #   5.  Compare
     assert lines_1 == lines_2

@@ -2,7 +2,7 @@ from blargh.engine import world
 from .. import exceptions
 
 class Instance():
-    def __init__(self, model, data={}):
+    def __init__(self, model, data={}, first=False):
         '''Create instance with model MODEL.
         Initial values will be set from DATA. DATA should contain "storage" values.
 
@@ -17,8 +17,8 @@ class Instance():
         for field in self.model.fields():
             stored_value = data.get(field.name, field.default_stored(self))
             self._d[field] = field.val(stored_value)
-        
-        #   Instance has also few attributes tracking it's current state 
+
+        #   Instance has also few attributes tracking it's current state
         #   in relation to current database state, history etc, such as
         #       changed_fields   -  set of fields that changed
         #       usable           -  boolean field, instance is usable until first (and only) write()/delete()
@@ -27,11 +27,11 @@ class Instance():
         self.changed_fields = set()
         self.usable = True
         self.deleted = False
-    
+
     #   PUBLIC INTERFACE
     def update(self, d):
         #   we are about to remove values, so copy is created
-        d = d.copy()  
+        d = d.copy()
 
         #   Note: we iterate self.model.fields() (instead of d.items()) to ensure
         #   the same order of updated fields. This might make a difference with some Calc fields.
@@ -42,25 +42,25 @@ class Instance():
 
             repr_value = d.pop(ext_name)
             field.update(self, repr_value, True)
-        
+
         #   Anything left - data contained incorrect field name
         if d:
             raise exceptions.FieldDoesNotExist(object_name=self.model.name, field_name=list(d)[0])
-    
+
     def set_value(self, field, value):
         #   Not usable -> exception
         if not self.usable:
             raise exceptions.ProgrammingError("This instance is no longer usable")
-        
+
         #   We don't bother with modyfying deleted instances
         #   (there is no way set_value influences anything else than this instance)
         if self.deleted:
             return
-        
+
         #   Field not writable -> exception
         if not field.writable(self) or field.pkey():
             raise exceptions.FieldUpdateForbidden(object_name=self.model.name, field_name=field.ext_name)
-        
+
         old_val = self.get_val(field)
         if old_val != value:
             #   Different value -> set it & note that field has changed
@@ -79,7 +79,7 @@ class Instance():
         '''
         for field, val in self._d.items():
             yield field, val
-    
+
     def get_val(self, field):
         '''Returns this instances FieldValue for given field'''
         return self._d[field]
@@ -101,11 +101,11 @@ class Instance():
 
         #   Delete started
         self.deleted = True
-    
+
         for field, val in self.field_values():
             if field.rel and val is not None:
                 field.propagate_delete(self)
-        
+
         #   And the world will forget
         world().remove_instance(self)
 
@@ -123,12 +123,12 @@ class Instance():
         '''
         if depth < 0:
             raise exceptions.BadParamValue(param_name='depth', accepted_values='non-negative integer')
-        
+
         if depth == 0:
             return self._0_repr()
         else:
             return self._1_repr(depth)
-    
+
     def changed(self):
         return bool(self.changed_fields)
 
@@ -144,7 +144,7 @@ class Instance():
             #   Hidden fields have no representation
             if field.hidden:
                 continue
-            
+
             #   Note: this 'depth - 1' is ignored if not field.rel, but
             #   could possibly be useful even for some custom fields
             repr_val = val.repr(depth - 1)

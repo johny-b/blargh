@@ -30,7 +30,7 @@ def test_delete_2(init_world):
     male = world().get_instance('male', male_id)
     wife = related(male, 'wife')
     children = related(male, 'children')
-    
+
     male.delete()
 
     assert related(wife, 'husband') is None
@@ -45,7 +45,7 @@ def test_delete_3(init_world):
     world().begin()
     cookie = world().get_instance('cookie', cookie_id)
     jar = related(cookie, 'jar')
-    
+
     cookie.delete()
 
     assert cookie not in related(jar, 'cookies')
@@ -60,7 +60,7 @@ def test_delete_4(init_world):
     jar_1_cookies = related(jar, 'cookies')
 
     jar.delete()
-    
+
     for cookie in jar_1_cookies:
         assert related(cookie, 'jar') is None
     assert jar_id not in world().data()['jar']

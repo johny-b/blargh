@@ -14,7 +14,7 @@ class Api(FRApi):
 
     def add_resource(self, resource, *urls, **kwargs):
         super().add_resource(resource, *urls, **kwargs)
-        
+
         #   TODO
         #   This is extremaly ugly - just a POC
         def get_url(instance):
@@ -24,7 +24,7 @@ class Api(FRApi):
             url = re.sub('<.+$', '', url)
             url = path.join(url, str(instance.id()))
             return url
-        
+
         #   Operation performed only for blargh.api.flask.Resources.
         #   Simple flask_restful.Resource is also accepted here.
         if issubclass(resource, Resource):
@@ -41,7 +41,7 @@ class Api(FRApi):
             #   Resource URIs - collection and single element
             collection_url = path.join(base, name)
             object_url = path.join(collection_url, '<id_>')
-            
+
             #   Add resource
             self.add_resource(cls, object_url, collection_url)
 

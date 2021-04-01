@@ -6,7 +6,7 @@ from blargh.engine import world
 from ..helpers.common import related
 
 from example import family
-    
+
 def all_instances():
     i = []
     for instances in world()._current_instances.values():
@@ -38,10 +38,10 @@ def change_husband(female_id, new_husband_id, op_target, write):
     if write:
         old_husband_id = old_husband.id()
         old_wife_id = old_wife.id()
-        
+
         world().write()
         world().commit()
-        
+
         world().begin()
         female, new_husband, old_husband, old_wife = world().get_instance('female', female_id), \
             world().get_instance('male', new_husband_id), world().get_instance('male', old_husband_id), \
@@ -73,10 +73,10 @@ def change_father(child_id, new_father_id, op_target, write):
 
     if write:
         old_father_id = old_father.id()
-        
+
         world().write()
         world().commit()
-        
+
         world().begin()
         child, old_father, new_father = world().get_instance('child', child_id), \
             world().get_instance('male', old_father_id), world().get_instance('male', new_father_id)
@@ -90,7 +90,7 @@ def test_update_father_1(init_world):
     assert related(child, 'father') == new_father
     assert child in related(new_father, 'children')
     assert child not in related(old_father, 'children')
-    
+
     #   Check changed
     for i in all_instances():
         if i in (child, new_father, old_father):
@@ -115,7 +115,7 @@ def test_update_father_3(init_world):
     assert related(child, 'father') == new_father
     assert child in related(new_father, 'children')
     assert child not in related(old_father, 'children')
-    
+
     #   Check changed
     for i in all_instances():
         if i in (child, new_father, old_father):
@@ -140,7 +140,7 @@ def test_update_husband_1(init_world):
     assert related(new_husband, 'wife') == female
     assert related(old_husband, 'wife') is None
     assert related(old_wife, 'husband') is None
-    
+
     #   Check changed
     for i in all_instances():
         if i in (female, new_husband, old_husband, old_wife):
@@ -177,7 +177,7 @@ def test_update_husband_3(init_world):
 def test_update_husband_4(init_world):
     init_world(family.dm)
     female, new_husband, old_husband, old_wife = change_husband(1, 2, 'husband', True)
-    
+
     assert related(female, 'husband') == new_husband
     assert related(new_husband, 'wife') == female
     assert related(old_husband, 'wife') is None

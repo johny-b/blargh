@@ -19,7 +19,7 @@ def test_single_default_1(init_world, get_client):
     #   1.  Add best_friend field.
     child = dm().object('child')
     child.add_field(Rel('best_friend', stores=child, multi=False, default=1))
-    
+
     #   If this is PG storage, we need to update database schema
     if issubclass(type(world().storage), PGStorage):
         conn = world().storage._conn
@@ -46,7 +46,7 @@ def test_single_multi_2(init_world, get_client):
     #   1.  Add best_friend field. New child's best friend is always child no 1.
     child = dm().object('child')
     child.add_field(Rel('best_friend', stores=dm().object('female'), multi=False, default={'name': 'BLARGH'}))
-    
+
     #   If this is PG storage, we need to update database schema
     if issubclass(type(world().storage), PGStorage):
         conn = world().storage._conn
@@ -78,7 +78,7 @@ def test_multi_default_1(init_world, get_client):
     #   1.  Add best_friend field.
     child = dm().object('child')
     child.add_field(Rel('friends', stores=child, multi=True, default=[1, 2]))
-    
+
     #   If this is PG storage, we need to update database schema
     if issubclass(type(world().storage), PGStorage):
         conn = world().storage._conn
@@ -104,9 +104,9 @@ def test_multi_default_2(init_world, get_client):
 
     #   1.  Add friends field - two fresh females, BLARGH and BLERGH
     child = dm().object('child')
-    child.add_field(Rel('friends', stores=dm().object('female'), multi=True, 
+    child.add_field(Rel('friends', stores=dm().object('female'), multi=True,
                     default=[{'name': 'BLARGH'}, {'name': 'BLERGH'}]))
-    
+
     #   If this is PG storage, we need to update database schema
     if issubclass(type(world().storage), PGStorage):
         conn = world().storage._conn

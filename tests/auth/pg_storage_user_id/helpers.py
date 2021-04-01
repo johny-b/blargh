@@ -15,7 +15,7 @@ class UserIdQuery(engine.storage.pg.Query):
         if not auth or 'user_id' not in auth:
             raise exceptions.e401()
         return auth['user_id']
-    
+
     def select(self, name, data):
         data['user_id'] = self._user_id()
         return super().select(name, data)
@@ -39,13 +39,13 @@ def init_cookies_with_user_id():
                 new_storage = engine.PGStorage(old_storage._conn, old_storage._schema, query_cls=query_cls)
                 return new_storage
             return wrapped_storage
-    
+
         engine.config._config['create_storage'] = wrap_storage(engine.config._config['create_storage'])
 
     #   1.  Init world
     init_pg_world(cookies.dm)
-    
-    #   2.  Modify cookie/jar tables 
+
+    #   2.  Modify cookie/jar tables
     conn = engine.world().storage._conn
     conn.cursor().execute('''
         ALTER TABLE jar     ADD COLUMN user_id integer;
@@ -57,4 +57,3 @@ def init_cookies_with_user_id():
 
     #   3.  Set query class
     set_query_class(UserIdQuery)
-

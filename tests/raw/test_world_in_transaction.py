@@ -17,16 +17,16 @@ def test_world_commit_1(init_world, method, args):
     '''Test most of the methods'''
     init_world(cookies.dm)
     w = world()
-    
+
     #   Test 1
     with pytest.raises(exceptions.ProgrammingError):
         getattr(w, method)(*args)
 
     w.begin()
-    
+
     #   Test 2 (not very intresting)
     getattr(w, method)(*args)
-    
+
     w.write()
     w.commit()
 

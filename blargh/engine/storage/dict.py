@@ -7,12 +7,12 @@ from copy import deepcopy
 
 class DictStorage(BaseStorage):
     '''Simplest possible Storage, indended for development and ad-hoc applications.
-        
+
         :param data_dict: dict object where all data will be stored
     '''
     def __init__(self, data_dict):
         self._commited = data_dict
-        
+
         #   This is initialized on first "real" usage
         #   (Depends on the data model, and data model might not be defined yet)
         self._max_used_id = None
@@ -37,7 +37,7 @@ class DictStorage(BaseStorage):
         #   currently used id's - they might not be in self._data yet, but
         #   are reserved and might not be reused
         self._max_used_id = {name: 0 for name in dm().objects()}
-    
+
     #   PUBLIC INTERFACE
     def save(self, instance):
         #   Determine name and id
@@ -47,7 +47,7 @@ class DictStorage(BaseStorage):
         #   Remove current object, if exists
         if id_ in self._data()[name]:
             self.delete(name, id_)
-        
+
         #   Create representation
         data = self._write_repr(instance)
 
@@ -74,7 +74,7 @@ class DictStorage(BaseStorage):
         for id_ in ids:
             if id_ not in self._data()[name]:
                 raise exceptions.e404(object_name=name, object_id=id_)
-        
+
             instance_data = self._data()[name][id_].copy()
 
             #   Note: DictStorage stores only not-null values, here we add those Nones
@@ -131,7 +131,7 @@ class DictStorage(BaseStorage):
     def commit(self):
         if self._uncommited is None:
             raise exceptions.ProgrammingError("commit when not in transaction")
-        
+
         for name in self._commited:
             self._commited[name] = self._uncommited[name]
 

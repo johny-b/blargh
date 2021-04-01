@@ -49,18 +49,18 @@ def new_cookies_dm(order_id):
             engine.world().storage._conn.cursor().execute('''
                 ALTER TABLE jar ADD COLUMN closed boolean;
             ''')
-    
+
     def add_field_cookie_cnt(dm):
         def getter(instance):
             field = instance.model.field('cookies')
             return len(instance.get_val(field).repr(0))
-        
+
         def setter(instance, new_cookie_cnt):
             #   1.  Current state
             cookies_field = instance.model.field('cookies')
             current_cookies = instance.get_val(cookies_field).repr(0)
             current_cookie_cnt = len(current_cookies)
-            
+
             if new_cookie_cnt == current_cookie_cnt:
                 #   2A  -   no changes
                 new_cookies = current_cookies
@@ -70,11 +70,10 @@ def new_cookies_dm(order_id):
             else:
                 #   2C  -   more cookies
                 fresh_cookies = [{} for i in range(current_cookie_cnt, new_cookie_cnt)]
-                new_cookies = current_cookies + fresh_cookies 
+                new_cookies = current_cookies + fresh_cookies
 
             #   3.  Return value
             return {'cookies': new_cookies}
-
 
         jar = dm.object('jar')
         jar.add_field(Calc('cookie_cnt', getter=getter, setter=setter))
@@ -82,10 +81,9 @@ def new_cookies_dm(order_id):
     def set_cookies_writable(dm):
         def open_jar(instance):
             return not instance.get_val(instance.model.field('closed')).repr()
-        
+
         jar = dm.object('jar')
         jar.field('cookies')._writable = open_jar
-
 
     def set_fields_order(dm, field_names):
         jar = dm.object('jar')
@@ -95,7 +93,7 @@ def new_cookies_dm(order_id):
     add_field_closed(dm)
     add_field_cookie_cnt(dm)
     set_cookies_writable(dm)
-    
+
     orders = {
         1: ('id', 'cookies', 'cookie_cnt', 'closed'),
         2: ('id', 'closed', 'cookie_cnt', 'cookies'),
@@ -103,7 +101,7 @@ def new_cookies_dm(order_id):
     set_fields_order(dm, orders[order_id])
 
 
-data_1 = {'closed': True, 'cookie_cnt': 2} 
+data_1 = {'closed': True, 'cookie_cnt': 2}
 
 params = (
     (data_1, 1, 200, 2, 3),
@@ -118,7 +116,7 @@ def test_update_order_1(init_world, get_client, patch_data, order, expected_stat
     client = get_client()
     data, status, headers = client.patch('jar', 1, patch_data)
     assert status == expected_status
-    
+
     if expected_status < 400:
         assert len(data['cookies']) == jar_cookies_cnt
         data, status, headers = client.get('cookie')

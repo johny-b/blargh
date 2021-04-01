@@ -29,7 +29,7 @@ def test_get_1(get_client, user_id, resource, expected_ids):
     (2, 'cookie', 1, 404),
     (2, 'cookie', 2, 404),
     (2, 'cookie', 3, 200),
-    
+
     (1, 'jar', 1, 200),
     (1, 'jar', 2, 404),
     (2, 'jar', 1, 404),

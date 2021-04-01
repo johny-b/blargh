@@ -19,13 +19,13 @@ def add_cookie_cnt_field():
     def getter(instance):
         field = instance.model.field('cookies')
         return len(instance.get_val(field).repr(0))
-    
+
     def setter(instance, new_cookie_cnt):
         #   1.  Current state
         cookies_field = instance.model.field('cookies')
         current_cookies = instance.get_val(cookies_field).repr(0)
         current_cookie_cnt = len(current_cookies)
-        
+
         if new_cookie_cnt == current_cookie_cnt:
             #   2A  -   no changes
             new_cookies = current_cookies
@@ -35,7 +35,7 @@ def add_cookie_cnt_field():
         else:
             #   2C  -   more cookies
             fresh_cookies = [{} for i in range(current_cookie_cnt, new_cookie_cnt)]
-            new_cookies = current_cookies + fresh_cookies 
+            new_cookies = current_cookies + fresh_cookies
 
         #   3.  Return value
         return {'cookies': new_cookies}

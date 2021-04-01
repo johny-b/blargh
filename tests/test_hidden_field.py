@@ -48,7 +48,7 @@ class TestIsShortbread():
         '''Type is not in visible'''
         client = self._prepare_client(init_world, get_client)
         assert 'type' not in client.get('cookie', 1)[0]
-    
+
     def test_is_shortbread_2(self, init_world, get_client):
         '''Type is not settable in PATCH'''
         client = self._prepare_client(init_world, get_client)
@@ -56,7 +56,7 @@ class TestIsShortbread():
         assert status == 400
         assert data == {'error': {'code': 'FIELD_DOES_NOT_EXISTS',
                                   'details': {'field_name': 'type', 'object_name': 'cookie'}}}
-    
+
     def test_is_shortbread_3(self, init_world, get_client):
         '''Type is not settable in POST'''
         client = self._prepare_client(init_world, get_client)
@@ -64,7 +64,7 @@ class TestIsShortbread():
         assert status == 400
         assert data == {'error': {'code': 'FIELD_DOES_NOT_EXISTS',
                                   'details': {'field_name': 'type', 'object_name': 'cookie'}}}
-    
+
     def test_set_is_shortbread(self, init_world, get_client):
         '''Check if is_shortbread works as expected'''
         client = self._prepare_client(init_world, get_client)
@@ -73,16 +73,15 @@ class TestIsShortbread():
 
         assert client.patch('cookie', 1, {'is_shortbread': True})[1] == 200
         assert client.patch('cookie', 3, {'is_shortbread': False})[1] == 200
-        
+
         assert client.get('cookie', 1)[0]['is_shortbread'] is True
         assert client.get('cookie', 3)[0]['is_shortbread'] is False
-
 
     def _prepare_client(self, init_world, get_client):
         init_world(cookies.dm)
         self._hide_type_add_is_shortbread()
         return get_client()
-    
+
     @staticmethod
     def _hide_type_add_is_shortbread():
         def getter(instance):
@@ -102,13 +101,13 @@ class TestHiddenRel():
         '''Check if cookie.jar is not visible'''
         client = self._prepare_client(init_world, get_client)
         assert 'jar' not in client.get('cookie', 1)[0]
-    
+
     def test_hidden_jar_2(self, init_world, get_client):
         '''Check if jar.cookies still works as expected'''
         client = self._prepare_client(init_world, get_client)
         assert client.patch('jar', 1, {'cookies': [1, 2, 3]})[1] == 200
         assert client.get('jar', 2)[0]['cookies'] == []
-    
+
     def test_hidden_jar_3(self, init_world, get_client):
         '''Check if cookie.in_jar'''
         client = self._prepare_client(init_world, get_client)
@@ -122,7 +121,7 @@ class TestHiddenRel():
         init_world(cookies.dm)
         self._hide_cookie_jar()
         return get_client()
-    
+
     @staticmethod
     def _hide_cookie_jar():
         def getter(instance):

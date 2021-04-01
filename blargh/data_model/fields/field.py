@@ -18,7 +18,7 @@ class Field():
                   Public interface: :code:`Field.writable(instance)`.
         hidden:   Boolean, if True field is not visible (so also can't be accessed directly), but still stored. 
                   Hidden field can be changed either by other Calc field, or by updates to a connected Rel field.
-    
+
     '''
     def __init__(self, name, ext_name=None, readonly=False, default=None, writable=True, hidden=False):
         self.name = name
@@ -32,7 +32,6 @@ class Field():
         if callable(self._writable):
             return self._writable(instance)
         return self._writable
-
 
     def load(self, instance, stored_value):
         instance.set_value(self, self.val(stored_value))
@@ -64,10 +63,10 @@ class Field():
             writable = self._writable.__name__
         else:
             writable = self._writable
-        
+
         lines.append('''{}('{}', ext_name='{}', writable={}, readonly={}, hidden={}, default={})'''.format(
                 type(self).__name__, self.name, self.ext_name, writable, self.readonly, self.hidden, self.default))
-        
+
         return lines
 
 class Scalar(Field):
@@ -101,7 +100,7 @@ class Scalar(Field):
 
     def pkey(self):
         return self._pkey
-    
+
     def type(self):
         return self._type
 
@@ -109,7 +108,7 @@ class Scalar(Field):
         try:
             return ScalarValue(raw_value, self._type)
         except (ValueError, TypeError):
-            raise exceptions.BadFieldValue("Value does not match field's type", 
+            raise exceptions.BadFieldValue("Value does not match field's type",
                                            value=raw_value, type=self._type.__name__, field_name=self.ext_name)
 
     def as_code(self):
@@ -135,19 +134,19 @@ class Calc(Field):
                 and returning some value, e.g.
 
                 .. code-block:: python
-                    
+
                     def is_empty(jar):
                         cookies_field = jar.model.field('cookies')
                         cookies = jar.get_val(cookies_field).repr(0)
                         return not len(cookies)
-                
+
                 Default getter returns None.
 
         setter: function accepting :code:`blargh.engine.Instance` as first argument and anything as second,
                 should return dictionary :code:`{'other_field_name': new_value_of_field}`, e.g:
 
                 .. code-block:: python
-                    
+
                     def ingredients(cookie, ingredients):
                         if 'milk' in ingredients:
                             new_type = 'muffin'
@@ -156,15 +155,15 @@ class Calc(Field):
                         return {'type': new_type}
 
                 Default setter raises an exception.
-                        
+
     '''
-    
+
     rel = False
-    
+
     @staticmethod
     def _default_getter(instance):
         return None
-    
+
     @staticmethod
     def _default_setter(instance, value):
         raise exceptions.ClientError("attempt to set value to Calc field without defined setter")
@@ -175,20 +174,20 @@ class Calc(Field):
         super().__init__(*args, **kwargs)
         self._getter = getter if getter else self._default_getter
         self._setter = setter if setter else self._default_setter
-    
+
     def load(self, instance, value):
         if value is not None:
             #   just to be sure
             raise exceptions.ProgrammingError("Calc field 'value' should always be None")
 
         instance.set_value(self, self.val(lambda: self._getter(instance)))
-    
+
     def _int_update(self, instance, value, ext):
         field_val_map = self._setter(instance, value)
         for ext_name, repr_value in field_val_map.items():
             field = instance.model.field(ext_name, ext=True)
             field.update(instance, repr_value)
-    
+
     def default_stored(self, instance):
         return lambda: self._getter(instance)
 
@@ -200,7 +199,7 @@ class Calc(Field):
 
     def as_code(self):
         code = super().as_code()
-        
+
         lines, last_line = code[:-1], code[-1]
 
         if self._getter != self._default_getter:
@@ -208,13 +207,12 @@ class Calc(Field):
             getter = self._getter.__name__
         else:
             getter = None
-        
+
         if self._setter != self._default_setter:
             lines += _function_def(self._setter)
             setter = self._setter.__name__
         else:
             setter = None
-        
 
         last_line = last_line.replace(')', ', getter={}, setter={})'.format(getter, setter))
         lines.append(last_line)
@@ -250,7 +248,7 @@ class Rel(Field):
             self._val_cls = SingleRelValue
             if 'default' in kwargs and type(kwargs['default']) is list:
                 raise exceptions.ProgrammingError("Multi field default cant be a list")
-        
+
         super().__init__(*args, **kwargs)
         self.stores = stores
         self.multi = multi
@@ -260,7 +258,6 @@ class Rel(Field):
             #   multi + cascade is not implemented
             #   (i'm not sure how it should work)
             raise NotImplementedError("Cascade=True is not supported for Multi fields")
-    
 
         #   this might be set in DataModel.connect(), but might also be left None
         self.other = None
@@ -271,7 +268,7 @@ class Rel(Field):
     def _int_update(self, this_instance, value, ext):
         old_val = this_instance.get_val(self)
         new_val = self.val(value)
-        
+
         if ext:
             #   If ext is True, we need to validate if new value objects really exist,
             #   the most straightforward way is to create instances stored in new_val.
@@ -280,9 +277,9 @@ class Rel(Field):
             new_ids = set(new_val.ids()) - set(old_val.ids())
             new_ids_val = self.val(list(new_ids))
             new_ids_val.inst()
-        
+
         this_instance.set_value(self, new_val)
-        
+
         other = self.other
         if other:
             this_id = this_instance.id()
@@ -301,7 +298,7 @@ class Rel(Field):
                             disconnected_instance = world().get_instance(other.stores.name, other_instance_ids[0])
                             disconnected_instance.set_value(self, self.val(self.default))
                     other_instance.set_value(other, other.val(new_ids))
-            
+
             for removed_id in removed:
                 other_instance = world().get_instance(self.stores.name, removed_id)
                 other_instance_ids = other_instance.get_val(other).ids()
@@ -309,7 +306,7 @@ class Rel(Field):
                     new_ids = other_instance_ids
                     new_ids.remove(this_id)
                     other_instance.set_value(other, other.val(new_ids))
-    
+
     def propagate_delete(self, deleted_instance):
         '''
         DELETED_INSTANCE is being deleted.
@@ -318,7 +315,7 @@ class Rel(Field):
         other = self.other
         if other is None:
             return
-        
+
         ids = deleted_instance.get_val(self).ids()
 
         for id_ in ids:
@@ -334,7 +331,7 @@ class Rel(Field):
             if this_id in other_instance_ids:
                 #   If other.cascade, instance should also be deleted,
                 #   if not - connection should be removed
-                #   
+                #
                 #   Note: if other.cascade is True, other.multi must be False (-> check Rel.init())
                 #   so this is the only connection.
                 #

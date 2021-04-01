@@ -24,11 +24,11 @@ class ExceptionRaiser:
 
     def SearchForbidden():
         Engine.get('jar', filter_={'cookies': [1, 2]})
-    
+
     def FieldIsReadonly():
         #   Modify data model - cookie.type is readonly
         dm().object('cookie').field('type').readonly = True
-        
+
         #   ... and yet we still try to change it!
         Engine.patch('cookie', 1, {'type': 'donut'})
 
@@ -55,7 +55,7 @@ class ExceptionRaiser:
         #   so bad auth on this level looks like a 500
         Engine.get('jar', 1, auth='aaa')
 
-params = [[getattr(exceptions, name), getattr(ExceptionRaiser, name)] 
+params = [[getattr(exceptions, name), getattr(ExceptionRaiser, name)]
           for name in ExceptionRaiser.__dict__ if not name.startswith('__')]
 
 @pytest.mark.parametrize('exception, method', params)
@@ -63,4 +63,3 @@ def test_exceptions(init_world, exception, method):
     init_world(cookies.dm)
     with pytest.raises(exception):
         method()
-

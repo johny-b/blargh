@@ -16,14 +16,14 @@ class PGSchemaImport():
     def __init__(self, conn, name, data_model_cls=DataModel):
         self._name = name
         self._q = Query(conn)
-        
+
         self._dm = data_model_cls(self._name)
 
         #   Each foreign key field determines one relationship.
         #   Foreign key fields are gathered in _create_objects()
         #   and later used in _create_relationships().
         self._fk_columns = defaultdict(set)
-        
+
         self._create_objects()
         self._create_relationships()
 
@@ -48,7 +48,7 @@ class PGSchemaImport():
 
             #   Create all scalar fields
             columns = self._q.get_columns_data(self._name, table_name)
-            
+
             for column in columns:
                 if column['fkey']:
                     #   This will be used further, in _create_relationship
@@ -79,9 +79,9 @@ class PGSchemaImport():
             0 .. n      1 .. 1      FOREIGN KEY NOT NULL
             0 .. 1      0 .. 1      FOREIGN KEY UNIQUE
             0 .. 1      1 .. 1      FOREIGN KEY NOT NULL UNIQUE
-        
+
         B) With 'join' table
-        
+
         All other relationships that could be clearly defined by database structure require
         additional join table (reminder: PRIMARY KEY FOREIGN KEY columns are forbidden).
 
@@ -96,11 +96,11 @@ class PGSchemaImport():
                 #   relationship data, check Query.get_rel_data for description
                 parent_name, child_card, parent_card, child_cascade = \
                         self._q.get_rel_data(self._name, child_name, child_column_name)
-                
+
                 #   objects
                 child = self._dm.object(child_name)
                 parent = self._dm.object(parent_name)
-                
+
                 #   "multi" fields are '*'/'+', single are '?' and '1'
                 child_multi = child_card in ('*', '+')
                 parent_multi = parent_card in ('*', '+')
@@ -111,10 +111,10 @@ class PGSchemaImport():
                 #   create fields
                 child.add_field(Rel(child_column_name, stores=parent, multi=parent_multi, cascade=child_cascade))
                 parent.add_field(Rel(parent_column_name, stores=child, multi=child_multi, cascade=False))
-                
+
                 #   and connect them
                 self._dm.connect(child, child_column_name, parent, parent_column_name)
-    
+
     def _default_parent_field_name(self, child, parent, card, child_field_name):
         '''
         Default name of PARENT field storing CARD number of CHILD. Field is connected 
@@ -128,7 +128,7 @@ class PGSchemaImport():
             * for single   CARD we return OTHER.name
             * for multiple CARD we return OTHER.name + 's'
         e.g., when OTHER.name is 'child' we get either 'child' or 'childs'.
-        
+
         Note: this names are not final - in case of duplicates, integer suffixes are added, 
               so finnaly we might end up with fields (mother_of, mother_of1, mother_of2, ... ).
 
@@ -145,6 +145,6 @@ class PGSchemaImport():
         while True:
             if parent.field(name) is None:
                 return name
-                
+
             name += str(i)
             i += 1

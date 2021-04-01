@@ -24,7 +24,7 @@ def test_usable_1(init_world):
 
     child.delete()
     world().write()
-    
+
     assert not child.usable
     assert not father.usable
     assert not mother.usable
@@ -37,7 +37,7 @@ def test_usable_2(init_world):
     other_child = world().get_instance('child', 2)
 
     world().write()
-    
+
     assert not child.usable
     assert not other_child.usable
 
@@ -57,7 +57,7 @@ def test_usable_3(init_world):
 def test_usable_4(init_world):
     '''attempt to update not usable instance should raise an exception'''
     init_world(family.dm)
-    
+
     world().begin()
     child = world().get_instance('child', 1)
     world().write()
@@ -68,7 +68,7 @@ def test_usable_4(init_world):
 def test_usable_5(init_world):
     '''attempt to delete not usable instance should raise an exception'''
     init_world(family.dm)
-    
+
     world().begin()
     child = world().get_instance('child', 1)
     world().write()

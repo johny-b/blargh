@@ -16,12 +16,12 @@ class Query():
     def delete(self, name, pkey_val):
         q = self._delete_sql(name)
         args = {'pkey_val': pkey_val}
-        
+
         return self._run_query(q, args, False)
 
     def upsert(self, name, data):
         q = self._upsert_sql(name, data)
-            
+
         #   DATA contains only changed columns, upsert uses all table columns
         all_columns_data = {column_name: None for column_name in self.table_columns(name)}
         all_columns_data.update(data)
@@ -39,13 +39,13 @@ class Query():
         if fetch_result:
             data = cur.fetchall()
             return [dict(x) for x in data]
-    
+
     #   SQL QUERIES CREATION
     def _delete_sql(self, name):
         pkey_name = self._pkeys[name]
 
         q = self._sql_template(name, 'delete')
-        q = q.format(table_schema=sql.Identifier(self._schema), table_name=sql.Identifier(name), 
+        q = q.format(table_schema=sql.Identifier(self._schema), table_name=sql.Identifier(name),
                      pkey_name=sql.Identifier(pkey_name))
 
         return q.as_string(self._conn)
@@ -56,11 +56,11 @@ class Query():
         #   all table columns
         all_columns = [sql.Identifier(column) for column in table_columns]
         all_columns_sql = sql.SQL(', ').join(all_columns)
-        
+
         #   Columns to be updated
         updated_columns = [sql.Identifier(name) for name in data.keys()]
         updated_columns_sql = sql.SQL(', ').join(updated_columns)
-        
+
         #   Pkey name
         pkey_name = self._pkeys[name]
 
@@ -72,7 +72,7 @@ class Query():
         q = q.format(table_schema=sql.Identifier(self._schema), table_name=sql.Identifier(name),
                      pkey_name=sql.Identifier(pkey_name), all_columns=all_columns_sql,
                      updated_columns=updated_columns_sql, all_values=all_values_sql)
-        
+
         return q.as_string(self._conn)
 
     def _select_sql(self, name, cond):
@@ -101,7 +101,7 @@ class Query():
         where = sql.SQL('WHERE ') + sql.SQL(' AND ').join(parts)
 
         return where.as_string(self._conn)
-    
+
     def _sql_template(self, resource_name, query_name):
         return sql.SQL(query_str[query_name])
 
@@ -122,7 +122,7 @@ class Query():
             cur.execute(query_str['get_table_columns'], (self._schema, table_name))
             self._table_columns_data[table_name] = [x[0] for x in cur.fetchall()]
         return self._table_columns_data[table_name]
-    
+
     def default_pkey_expr(self, table_name, column_name):
         if table_name not in self._default_pkey_expr:
             cur = self._conn.cursor()

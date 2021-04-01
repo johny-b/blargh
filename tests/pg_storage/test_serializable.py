@@ -75,11 +75,11 @@ def cleanup():
     conn = get_connection()
     conn.cursor().execute('DROP SCHEMA IF EXISTS {} CASCADE'.format(schema_name))
     conn.commit()
-    
+
     #   Reload PGStorage - remove code changes
     importlib.reload(pg_storage)
-    
-    
+
+
 op1 = ('patch', ('child', 1, {'mother': 2}))
 op2 = ('patch', ('child', 1, {'mother': None}))
 op3 = ('put', ('female', 2, {'children': []}))
@@ -107,7 +107,7 @@ def test_serializable(get_client, cleanup, op1, op2, retry_cnt, success_cnt):
 
     prepare()
     client = get_client()
-    
+
     engine.conf['max_retry_cnt'] = retry_cnt
 
     q = mp.Queue()
@@ -117,7 +117,7 @@ def test_serializable(get_client, cleanup, op1, op2, retry_cnt, success_cnt):
 
     p1.join()
     p2.join()
-    
+
     [*statuses] = q.get_nowait(), q.get_nowait()
 
     assert len([s for s in statuses if 200 <= s < 300]) == success_cnt

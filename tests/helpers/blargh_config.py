@@ -60,51 +60,51 @@ def fill_world(create_function):
     #   create_function commits changes, and after commit
     #   world (sometimes) is not usable, so here we recreate it
     engine.init_world()
-     
-def _init_world(dm, create_storage):
+
+def _init_world(dm, create_storage, get_instance_class=None):
     #   in case anything messed up our data model
     #   (currently api/flask does)
     import copy
     copied_dm = copy.deepcopy(dm)
-    engine.setup(dm=copied_dm, create_storage=create_storage)
+    engine.setup(dm=copied_dm, create_storage=create_storage, get_instance_class=get_instance_class)
 
-def init_dict_world(dm, create_function=None):
+def init_dict_world(dm, create_function=None, get_instance_class=None):
     data = {}
-    
+
     storage = engine.DictStorage(data)
 
-    _init_world(dm, storage)
+    _init_world(dm, storage, get_instance_class)
     fill_world(create_function)
 
-def init_pickled_dict_world(dm, create_function=None):
+def init_pickled_dict_world(dm, create_function=None, get_instance_class=None):
     fname = 'tests/_dict_storage'
     try:
         os.remove(fname)
     except OSError:
         pass
-    
+
     def storage():
         return engine.PickledDictStorage(fname)
 
-    _init_world(dm, storage)
+    _init_world(dm, storage, get_instance_class)
     fill_world(create_function)
 
 def pg_connstr():
     return os.environ.get('PGS_CONNSTR')
 
-def init_pg_world(dm, create_function=None):
+def init_pg_world(dm, create_function=None, get_instance_class=None):
     #   Initialize connection
     connstr = pg_connstr()
     if connstr is None:
         pytest.skip("env variable PGS_CONNSTR is not set -> PGStorage is not tested")
     connection = psycopg2.connect(connstr)
-        
+
     #   Prepare temporary schema
     create_schema_sql = eval(dm.name).pg_schema_sql
     connection.cursor().execute('SET search_path TO pg_temp')
     connection.cursor().execute(create_schema_sql)
     connection.commit()
-    
+
     #   Find temp schema name
     cur = connection.cursor()
     cur.execute('SELECT nspname FROM pg_namespace WHERE oid = pg_my_temp_schema()')
@@ -114,7 +114,7 @@ def init_pg_world(dm, create_function=None):
     def storage():
         return engine.PGStorage(connection, schema_name)
 
-    _init_world(dm, storage)
+    _init_world(dm, storage, get_instance_class)
     fill_world(create_function)
 
 

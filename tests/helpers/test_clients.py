@@ -5,7 +5,7 @@ from flask import Flask
 from blargh.api import basic, flask
 
 from flask_jwt_extended import create_access_token, JWTManager, get_jwt_identity, jwt_required
- 
+
 class AuthClient():
     def __init__(self):
         self._auth_data = {}
@@ -62,7 +62,7 @@ class FlaskClient(BaseApiClient):
             url_parts[2] = '/api/{}/{}'.format(resource, id_)
         else:
             url_parts[2] = '/api/{}'.format(resource)
-        
+
         params = {}
         if depth is not None:
             params['depth'] = depth
@@ -73,10 +73,9 @@ class FlaskClient(BaseApiClient):
         if sort is not None:
             params['sort'] = json.dumps(sort)
 
-        
         url_parts[4] = urlencode(params)
         url = urlunparse(url_parts)
-        
+
         return self._make_call('get', url, {})
 
     def delete(self, resource, id_):
@@ -110,7 +109,7 @@ class FlaskClient(BaseApiClient):
 class FlaskClientAuth(FlaskClient, AuthClient):
     def __init__(self):
         '''
-        Note: things are initialized in not intuitive order, but this is 
+        Note: things are initialized in not intuitive order, but this is
         required because of some unusual things done in _init_flask_jwt.
 
         Maybe replacing add_default_blargh_resources with some custom function would be better.
@@ -120,21 +119,21 @@ class FlaskClientAuth(FlaskClient, AuthClient):
         #   1.  Init restful api
         self._api = flask.Api()
         self._api.add_default_blargh_resources('/api')
-        
+
         #   2.  Create flask app
         self._app = Flask(__name__)
-        
+
         #   3.  Init all JWT-related stuff
         #       (Note: this alters not only client, but also api)
         self._init_flask_jwt()
-        
+
         #   4.  Connect api and app
         self._api.init_app(self._app)
-        
+
         #   5.  Set testing
         self._app.config['TESTING'] = True
         self._flask_client = self._app.test_client()
-    
+
     def _make_call(self, method, url, kwargs):
         '''
         Add authorization header
@@ -147,45 +146,45 @@ class FlaskClientAuth(FlaskClient, AuthClient):
         kwargs['headers'] = headers
 
         return super()._make_call(method, url, kwargs)
-    
+
     def _init_flask_jwt(self):
         '''
         PURPOSE: All resources should require authentication
         METHOD:  Uses flask-restful decorator jwt_required. Decorator is added to
-                 each resources' method_decorators (more precise: new resource with 
+                 each resources' method_decorators (more precise: new resource with
                  this decorator is created, this is caused by flask-restful internals).
         '''
         def jwt_auth(f):
             '''
             decorated function gets auth=get_jwt_identity()
             '''
-            @jwt_required
+            @jwt_required()
             def wrapped(*args, **kwargs):
                 auth = get_jwt_identity()
                 if auth:
                     kwargs['auth'] = auth
                 return f(*args, **kwargs)
             return wrapped
-    
+
         #   "Standard" server-side JWT initialization
         self._app.config['JWT_SECRET_KEY'] = '123soverysecret'
         JWTManager(self._app)
-    
-        #   Current state: resource classes are blargh.api.flask.Resources, 
+
+        #   Current state: resource classes are blargh.api.flask.Resources,
         #                  and they know nothing about JWT
         #   Desired state: resource classes have .method_decorators including jwt_auth (above)
         #   Method: "simple" appending to .method_decorators works well for single test,
-        #           but this would require cleanup/reloading after each test (since flask.Resource was modified). 
+        #           but this would require cleanup/reloading after each test (since flask.Resource was modified).
         #           Instead, resource classes are substituted with new classes inheriting from old ones.
         new_resources = []
-        
+
         #   Note: this is not documented flask-restful.Api stuff
         for old_row in self._api.resources:
             old_cls, *rest = old_row
-            new_cls = type(old_cls.__name__, 
-                           (old_cls,), 
+            new_cls = type(old_cls.__name__,
+                           (old_cls,),
                            {'method_decorators': old_cls.method_decorators + [jwt_auth]})
             new_row = [new_cls] + rest
             new_resources.append(new_row)
-    
+
         self._api.resources = new_resources

@@ -33,4 +33,3 @@ def test_scalar_type(type_, value, raises):
         assert field.val(value)._val == type_(value)
     else:
         assert field.val(value)._val == value
-

@@ -27,7 +27,7 @@ def capture_psycopg_error(f):
             raise exceptions.e500(diag_2_msg(e.diag))
         except psycopg2.Error as e:
             raise exceptions.e400(diag_2_msg(e.diag))
-            
+
     return wrapped
 
 
@@ -43,7 +43,7 @@ class PGStorage(BaseStorage):
             conn.commit()
         conn.set_session(isolation_level='SERIALIZABLE', autocommit=False)
         conn.cursor().execute('''SET CONSTRAINTS ALL DEFERRED''')
-        
+
         self._conn = conn
 
         self._schema = schema
@@ -57,10 +57,10 @@ class PGStorage(BaseStorage):
 
     def _q(self):
         if self._query is None:
-            self._query = self._query_cls(self._conn, self._schema, 
+            self._query = self._query_cls(self._conn, self._schema,
                                           {o.name: o.pkey_field().name for o in dm().objects().values()})
         return self._query
-    
+
     #   PUBLIC INTERFACE
     @capture_psycopg_error
     def save(self, instance):
@@ -92,7 +92,7 @@ class PGStorage(BaseStorage):
         for field, val in instance.field_values():
             if not field.stored():
                 continue
-            
+
             #   If val.stored() is None it should be written only if field changed.
             #   This way we distinguish None fields that were never set before (and might be set to
             #   a different value by database default) from updated fields set to None.
@@ -121,13 +121,13 @@ class PGStorage(BaseStorage):
 
         #   Determine column name
         pkey_name = dm().object(name).pkey_field().name
-        
+
         stored_data = self._select_objects(name, {pkey_name: ids})
         if len(stored_data) != len(ids):
             got_ids = [d[pkey_name] for d in stored_data]
             missing_ids = [id_ for id_ in ids if id_ not in got_ids]
             raise exceptions.e404(object_name=name, object_id=missing_ids[0])
-        
+
         full_data = self._add_virtual_columns(name, stored_data)
         return full_data
 
@@ -180,7 +180,7 @@ class PGStorage(BaseStorage):
             and LIMIT is ignored because SORTing first is necesary.
         '''
         model = dm().object(this_name)
-        
+
         #   First, split to parts
         this_table_wr = {}
         other_selects = []
@@ -225,7 +225,7 @@ class PGStorage(BaseStorage):
         This works well with
             *   nextval(sequence)
             *   any simmilar user-defined function
-        
+
         If there is no default, an exception is raised. This might change and one
         day we'll look for the biggest current ID and add 1.
 
@@ -243,8 +243,8 @@ class PGStorage(BaseStorage):
         default_expr = self._q().default_pkey_expr(name, pkey_name)
 
         if default_expr is None:
-            raise exceptions.ProgrammingError("Unknown default pkey value for {}".format(name)) 
-        
+            raise exceptions.ProgrammingError("Unknown default pkey value for {}".format(name))
+
         old_val = None
         while True:
             cursor = self._conn.cursor()
@@ -265,7 +265,6 @@ class PGStorage(BaseStorage):
         for name, obj in dm().objects().items():
             d[name] = self._q().dump_table(name, obj.pkey_field().name)
         return d
-
 
     #   PRIVATE METHODS
 

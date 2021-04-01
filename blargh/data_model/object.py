@@ -5,18 +5,18 @@ class Object():
         self.name = name
         self._fields = []
         self._pkey_field = None
-    
+
     def field(self, name, ext=False):
         for field in self._fields:
             if not ext and field.name == name:
                 return field
             elif ext and field.ext_name == name:
                 return field
-    
+
     def fields(self):
         for field in self._fields:
             yield field
-    
+
     def add_field(self, field):
         #   Check if field has correct names
         if self.field(field.name) is not None:

@@ -37,12 +37,12 @@ def world_transaction(f):
             #   auth = None is the same as empty dict
             if auth is None:
                 auth = {}
-            
+
             #   auth should be a dict
             if type(auth) is not dict:
                 raise exceptions.e500("auth should be a dict")
             world.set_auth(auth)
-        
+
         #   Start work
         try:
             result = run_with_retry(conf['max_retry_cnt'])
@@ -64,9 +64,9 @@ class Engine():
         else:
             instances = world.get_instances(name, filter_, sort, limit)
 
-            #   Currently filter implementation is required in the storage and 
+            #   Currently filter implementation is required in the storage and
             #   sort/limit are optional. There is no reason behind it other than legacy.
-            #   
+            #
             #   If the storage implements sort/limit, _apply_sort and _apply_limit here are redundant,
             #   so one day it would be nice to have something like Storage.implements_limit and Storage.implements_sort
             Engine._apply_sort(instances, sort)
@@ -74,7 +74,7 @@ class Engine():
 
             if instances and depth > 0:
                 #   This is never necesary (instances will be created either way),
-                #   but might speed up the process - storage will be retriving 
+                #   but might speed up the process - storage will be retriving
                 #   multiple instances at once.
                 #   For most use cases the condition should be 'depth > 1', because
                 #   rel fields are not expanded for depth==0, but we might have
@@ -82,8 +82,7 @@ class Engine():
                 Engine._create_neighbours(world, instances)
 
             return [instance.repr(depth) for instance in instances], 200
-        
-    
+
     @world_transaction
     def post(world, name, val):
         '''
@@ -93,7 +92,7 @@ class Engine():
             i = world.new_instance(name)
             i.update(d)
             world.write()
-                
+
             #   Some field might be modified at write() (i.e. by database defaults),
             #   we want to include them in final data
             i = world.get_instance(name, i.id())
@@ -105,23 +104,23 @@ class Engine():
             data = single_post(val)
         else:
             raise exceptions.ProgrammingError('post accepts list or dict, nothing else')
-            
+
         return data, 201
-    
+
     @world_transaction
     def patch(world, name, id_, val):
         i = world.get_instance(name, id_)
         i.update(val)
         world.write()
-                
+
         #   Some field might be modified at write() (i.e. by database triggers),
         #   we want to include them in final data
         i = world.get_instance(name, i.id())
-        
+
         #   We return repr(1) + updated fields from repr(1)
         data = i.repr(1)
         return data, 200
-    
+
     @world_transaction
     def put(world, name, id_, val):
         #   Delete, ignoring 404
@@ -130,26 +129,26 @@ class Engine():
             i.delete()
         except exceptions.e404:
             pass
-        
+
         #   Create new instance
         i = world.new_instance(name, id_)
         i.update(val)
         world.write()
-                
+
         #   Some field might be modified at write() (i.e. by database defaults),
         #   we want to include them in final data
         i = world.get_instance(name, i.id())
-    
+
         data = i.repr(1)
         return data, 201
-    
+
     @world_transaction
     def delete(world, name, id_):
         i = world.get_instance(name, id_)
         i.delete()
-        
+
         return None, 200
-    
+
     @staticmethod
     def _apply_sort(instances, sort):
         if sort is not None:
@@ -163,7 +162,7 @@ class Engine():
                     reverse = False
                     field_name = sort_name
                 instances.sort(key=lambda i: i.get_val(i.model.field(field_name, ext=True)).repr(0), reverse=reverse)
-    
+
     @staticmethod
     def _apply_limit(instances, limit):
         if limit is not None:
@@ -179,5 +178,5 @@ class Engine():
                 ids = [instance.get_val(field).stored() for instance in instances]
                 if field.multi:
                     ids = [id_ for instance_ids in ids for id_ in instance_ids]
-                
+
                 world.get_instances_by_ids(field.stores.name, ids)

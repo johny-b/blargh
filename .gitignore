@@ -1,6 +1,7 @@
 *__pycache__*
 .pytest_cache
 tests/_d*
+.ropeproject/*
 
 # DOCS
 docs/_build
