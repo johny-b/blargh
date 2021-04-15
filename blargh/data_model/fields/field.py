@@ -16,7 +16,7 @@ class Field():
         _writable: Either boolean, or a function accepting :code:`blargh.engine.Instance` as only argument.
                   If evaluates to False, field can't be changed in any way - compare with :code:`readonly`.
                   Public interface: :code:`Field.writable(instance)`.
-        hidden:   Boolean, if True field is not visible (so also can't be accessed directly), but still stored. 
+        hidden:   Boolean, if True field is not visible (so also can't be accessed directly), but still stored.
                   Hidden field can be changed either by other Calc field, or by updates to a connected Rel field.
 
     '''
@@ -81,8 +81,8 @@ class Scalar(Field):
         pkey: If True, this field will be used in :code:`blargh.engine.Instance.id()`.
               Every object must have exactly one pkey field. Pkey fields are always readonly.
         type_: If anything else than None, values of this type will be accepted for this field.
-              Values that can be reversibly casted to :code:`type_` are also accepted. E.g. :code:`'1'` 
-              is accepted for :code:`int` field, because :code:`str(int('1')) == '1'`, 
+              Values that can be reversibly casted to :code:`type_` are also accepted. E.g. :code:`'1'`
+              is accepted for :code:`int` field, because :code:`str(int('1')) == '1'`,
               but :code:`'1 '` is not.
     '''
     rel = False
@@ -130,7 +130,7 @@ class Calc(Field):
     we might want to store kilometers, but allow end users to read/write miles.
 
     Attributes:
-        getter: function accepting :code:`blargh.engine.Instance` as first and only argument, 
+        getter: function accepting :code:`blargh.engine.Instance` as first and only argument,
                 and returning some value, e.g.
 
                 .. code-block:: python
@@ -223,14 +223,14 @@ class Rel(Field):
     '''
     Field representing other objects.
 
-    Relation could be one-way (e.g. jar knows it's cookies, but cookie has no idea if it is in a jar), 
+    Relation could be one-way (e.g. jar knows it's cookies, but cookie has no idea if it is in a jar),
     or two-way. Two-way relations are created with DataModel.connect().
 
     Attributes:
-        stores: Defined type of objects on the other side of the relation 
+        stores: Defined type of objects on the other side of the relation
                 (heterogeneous relations are not allowed).
-                Value should be :code:`engine.data_model.object.Object` (the thing returned by 
-                :code:`DataModel.create_object('some_name')`). 
+                Value should be :code:`engine.data_model.object.Object` (the thing returned by
+                :code:`DataModel.create_object('some_name')`).
         multi: if True, any number of related objects is allowed, False - 0 or 1.
         cascade: if True, when this instance is deleted all related instances are also deleted.
 
@@ -337,7 +337,7 @@ class Rel(Field):
                 #
                 #   We also check instance.deleted to avoid recursion on recursive cascades
                 if other.cascade and not other_instance.deleted:
-                    other_instance.delete()
+                    other_instance.delete(propagated_from=deleted_instance)
                 else:
                     new_ids = other_instance_ids
                     new_ids.remove(this_id)

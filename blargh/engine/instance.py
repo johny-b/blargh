@@ -61,11 +61,7 @@ class Instance():
         if not field.writable(self) or field.pkey():
             raise exceptions.FieldUpdateForbidden(object_name=self.model.name, field_name=field.ext_name)
 
-        old_val = self.get_val(field)
-        if old_val != value:
-            #   Different value -> set it & note that field has changed
-            self._d[field] = value
-            self.changed_fields.add(field)
+        self._change_field_value(field, value)
 
     def id(self):
         '''
@@ -89,11 +85,15 @@ class Instance():
         field = self.model.field(field_name)
         return self.get_val(field)
 
-    def delete(self):
+    def delete(self, propagated_from=None):
         '''
         Delete SELF:
             *   make other instances forget (by updating relationship fields)
             *   make world forget
+
+        PROPAGATED_FROM - other instance, connected to SELF via a Rel field with cascade=True,
+        that was deleted - and this way initialized deletion of SELF. None if SELF.delete() was
+        called in a different context.
         '''
         #   Not usable -> exception
         if not self.usable:
@@ -133,6 +133,12 @@ class Instance():
         return bool(self.changed_fields)
 
     #   PRIVATE METHODS
+    def _change_field_value(self, field, value):
+        old_val = self.get_val(field)
+        if old_val != value:
+            self._d[field] = value
+            self.changed_fields.add(field)
+
     def _0_repr(self):
         '''self.repr() for depth = 0'''
         return self.id()
